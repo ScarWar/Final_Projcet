@@ -225,6 +225,4 @@ void kNearestNeighborsRecursive(KDTreeNode *kdTreeNode, SPBPQueue *queue, SPPoin
 void printKDTreeNode(KDTreeNode *kdTreeNode) {
     if (kdTreeNode == NULL)
         return;
-
-//    kdTreeNode.
 }
