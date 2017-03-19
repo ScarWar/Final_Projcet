@@ -14,7 +14,7 @@ typedef struct double_tuple_t {
 } DoubleTuple;
 
 KDArray *init(SPPoint **arr, size_t size) {
-    if (arr == NULL || size < 0) return NULL; // TODO error message
+    if (arr == NULL || size <= 0) return NULL; // TODO error message
 
     KDArray *kdArray;
     if (!(kdArray = malloc(sizeof(KDArray))))
@@ -58,8 +58,9 @@ int freeKDArray(KDArray *kdArray) { // TODO add end cases
     if (kdArray == NULL) return 0;
 
     // Free point array, including each point
-    for (int i = 0; i < kdArray->size; ++i)
+    for (int i = 0; i < kdArray->size; ++i) {
         spPointDestroy(kdArray->arr[i]);
+    }
     free(kdArray->arr);
 
     // Free all entries of the matrix and the matrix
@@ -155,9 +156,8 @@ KDArray **Split(KDArray *kdArray, int coor) {
     }
 
 
-
     for (size_t i = 0; i < kdArray->size; ++i) {
-        if(map1[i] != -1)
+        if (map1[i] != -1)
             kdLeft->arr[map1[i]] = spPointCopy(kdArray->arr[i]);
         else
             kdRight->arr[map2[i]] = spPointCopy(kdArray->arr[i]);
@@ -221,4 +221,18 @@ double getMedian(KDArray *kdArray, int i) {
         return -1; // TODO error message
     size_t mid = kdArray->size & 1 ? 1 + kdArray->size >> 1 : kdArray->size >> 1;
     return spPointGetAxisCoor(kdArray->arr[kdArray->mat[i][mid - 1]], i);
+}
+
+void freeKDArrayLeaf(KDArray *kdArray) {
+    if (kdArray == NULL) return;
+
+    spPointDestroy(*kdArray->arr);
+    free(kdArray->arr);
+
+    // Free all entries of the matrix and the matrix
+    for (int i = 0; i < kdArray->dim; ++i)
+        free(kdArray->mat[i]);
+    free(kdArray->mat);
+    free(kdArray);
+
 }

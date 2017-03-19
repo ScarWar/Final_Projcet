@@ -90,4 +90,7 @@ SPPoint **getArr(KDArray *kdArray);
  */
 double getMedian(KDArray *kdArray, int i);
 
+void freeKDArrayLeaf(KDArray *kdArray);
+
+
 #endif //KDTREE_KDARRAY_H
