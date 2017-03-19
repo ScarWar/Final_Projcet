@@ -3,7 +3,7 @@
 #include "KDArray.h"
 #include "KDTree.h"
 #include <time.h>
-
+#include <stdio.h>
 
 #define INVALID -1 // TODO change if needed
 #define SQ(x) ((x) * (x))
@@ -22,7 +22,7 @@ struct kd_tree_node_t {
     double val;
     KDTreeNode *left;
     KDTreeNode *right;
-    SPPoint **data;
+    SPPoint *data;
 };
 
 KDTree *createKDTree(KDArray *kdArray) {
@@ -42,6 +42,7 @@ KDTree *createKDTree(KDArray *kdArray) {
 
 void destroyKDTree(KDTree *kdTree) {
     destroyKDTreeNode(kdTree->root);
+//    free(kdTree->root);
     free(kdTree);
 }
 
@@ -60,9 +61,9 @@ KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim) {
         kdTreeNode->val = INVALID;
         kdTreeNode->left = NULL;
         kdTreeNode->right = NULL;
-        kdTreeNode->data = getArr(kdArray);
+        kdTreeNode->data = spPointCopy(*getArr(kdArray));
 
-
+        freeKDArrayLeaf(kdArray);
         return kdTreeNode;
     }
 
@@ -94,11 +95,11 @@ void destroyKDTreeNode(KDTreeNode *kdTreeNode) {
         return;
     }
     if (kdTreeNode->data != NULL) {
-        spPointDestroy(*kdTreeNode->data);
-        free(kdTreeNode->data);
+        spPointDestroy(kdTreeNode->data);
+    } else {
+        destroyKDTreeNode(kdTreeNode->left);
+        destroyKDTreeNode(kdTreeNode->right);
     }
-    destroyKDTreeNode(kdTreeNode->left);
-    destroyKDTreeNode(kdTreeNode->right);
     free(kdTreeNode);
 }
 
@@ -168,7 +169,7 @@ KDTreeNode *getRight(KDTreeNode *kdTreeNode) {
     return kdTreeNode->right;
 }
 
-SPPoint **getData(KDTreeNode *kdTreeNode) {
+SPPoint *getData(KDTreeNode *kdTreeNode) {
     if (kdTreeNode == NULL) {
         return NULL; // TODO error message
     }
@@ -196,10 +197,10 @@ void kNearestNeighborsRecursive(KDTreeNode *kdTreeNode, SPBPQueue *queue, SPPoin
     }
 
     if (isLeaf(kdTreeNode)) {
-        t = spPointL2SquaredDistance(*kdTreeNode->data, point);
+        t = spPointL2SquaredDistance(kdTreeNode->data, point);
 
-        spBPQueueEnqueue(queue, spPointGetIndex(*kdTreeNode->data),
-                         spPointL2SquaredDistance(*kdTreeNode->data, point));
+        spBPQueueEnqueue(queue, spPointGetIndex(kdTreeNode->data),
+                         spPointL2SquaredDistance(kdTreeNode->data, point));
         return;
     }
 

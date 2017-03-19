@@ -42,7 +42,7 @@ KDTreeNode *getLeft(KDTreeNode *kdTreeNode);
 
 KDTreeNode *getRight(KDTreeNode *kdTreeNode);
 
-SPPoint **getData(KDTreeNode *kdTreeNode);
+SPPoint *getData(KDTreeNode *kdTreeNode);
 
 int isLeaf(KDTreeNode *kdTreeNode);
 
