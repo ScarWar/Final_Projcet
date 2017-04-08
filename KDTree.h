@@ -22,11 +22,11 @@ typedef enum split_method_t {
  *
  */
 
-KDTree *createKDTree(KDArray *kdArray);
+KDTree *createKDTree(KDArray *kdArray, SplitMethod splitMethod);
 
 void destroyKDTree(KDTree *kdTree);
 
-KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim);
+KDTreeNode *createKDTreeNode(KDArray *kdArray, SplitMethod splitMethod, int dim);
 
 void destroyKDTreeNode(KDTreeNode *kdTreeNode);
 

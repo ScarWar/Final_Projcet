@@ -3,18 +3,18 @@
 #include "KDArray.h"
 #include "KDTree.h"
 #include <time.h>
-#include <stdio.h>
 
 #define INVALID -1 // TODO change if needed
 #define SQ(x) ((x) * (x))
 
 
 // For test only
-#define spKDTreeSplitMethod RANDOM // TODO change, Just for test
+#define spKDTreeSplitMethod INCREMENTAL // TODO change, Just for test
 #define spKNN 2 // TODO change, just for test
 
 struct kd_tree_t {
     KDTreeNode *root;
+//    SplitMethod splitMethod; //  Optional - comment if split method is global parameter.
 };
 
 struct kd_tree_node_t {
@@ -25,7 +25,7 @@ struct kd_tree_node_t {
     SPPoint *data;
 };
 
-KDTree *createKDTree(KDArray *kdArray) {
+KDTree *createKDTree(KDArray *kdArray, SplitMethod splitMethod) {
     if (kdArray == NULL) {
         return NULL; // TODO error message
     }
@@ -36,17 +36,16 @@ KDTree *createKDTree(KDArray *kdArray) {
     }
 
     int splitDim = getSplitDim(kdArray, spKDTreeSplitMethod, 0); // TODO Change dim, just for test
-    kdTree->root = createKDTreeNode(kdArray, splitDim);
+    kdTree->root = createKDTreeNode(kdArray, splitMethod, splitDim);
     return kdTree;
 }
 
 void destroyKDTree(KDTree *kdTree) {
     destroyKDTreeNode(kdTree->root);
-//    free(kdTree->root);
     free(kdTree);
 }
 
-KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim) {
+KDTreeNode *createKDTreeNode(KDArray *kdArray, SplitMethod splitMethod, int dim) {
     int splitDim;
     if (kdArray == NULL) {
         return NULL; // TODO error message
@@ -72,7 +71,7 @@ KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim) {
     KDArray *kdLeft;
     KDArray *kdRight;
 
-    splitDim = getSplitDim(kdArray, spKDTreeSplitMethod, dim);
+    splitDim = getSplitDim(kdArray, splitMethod, dim);
 
     pArray = Split(kdArray, splitDim);
     kdLeft = pArray[0];
@@ -80,8 +79,11 @@ KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim) {
 
     kdTreeNode->val = getMedian(kdArray, splitDim);
     kdTreeNode->dim = splitDim;
-    kdTreeNode->left = createKDTreeNode(kdLeft, splitDim);
-    kdTreeNode->right = createKDTreeNode(kdRight, splitDim);
+
+    if (splitMethod == INCREMENTAL) ++splitDim;
+
+    kdTreeNode->left = createKDTreeNode(kdLeft, splitMethod, splitDim);
+    kdTreeNode->right = createKDTreeNode(kdRight, splitMethod, splitDim);
     kdTreeNode->data = NULL;
 
     free(pArray);
@@ -105,26 +107,25 @@ void destroyKDTreeNode(KDTreeNode *kdTreeNode) {
 
 int getSplitDim(KDArray *kdArray, SplitMethod splitMethod, int dim) {
     double maxSpread = 0, currSpread = 0;
-    int splitIndex = -1, matIndexStart, matIndexEnd;
+    int splitIndex = -1, matIndexStart = 0, matIndexEnd = 0;
     if (kdArray == NULL) {
         return -1; // TODO error message
     }
-    // TODO maybe to do switch statement
+
+
     if (splitMethod == RANDOM) {
         srand((unsigned int) time(NULL));
-        return rand() % getKDArrayDim(kdArray);
-    }
-    if (splitMethod == INCREMENTAL) {
-        return ++dim % getKDArrayDim(kdArray);
-    }
-    if (splitMethod == MAX_SPREAD) {
+        splitIndex = rand() % getKDArrayDim(kdArray);
+    } else if (splitMethod == INCREMENTAL) {
+        splitIndex = dim % getKDArrayDim(kdArray);
+    } else {
         for (int i = 0; i < dim; ++i) {
             for (int j = 0; j < getSize(kdArray); ++j) {
                 matIndexStart = getMatrix(kdArray)[i][0];
                 matIndexEnd = getMatrix(kdArray)[i][getSize(kdArray) - 1];
                 currSpread = spPointGetAxisCoor(getArr(kdArray)[matIndexEnd], i) -
                              spPointGetAxisCoor(getArr(kdArray)[matIndexStart], i);
-                if (currSpread > maxSpread) {
+                if (currSpread > maxSpread) { // Only improvements are saved
                     splitIndex = i;
                     maxSpread = currSpread;
                 }
@@ -220,9 +221,4 @@ void kNearestNeighborsRecursive(KDTreeNode *kdTreeNode, SPBPQueue *queue, SPPoin
         else
             kNearestNeighborsRecursive(kdTreeNode->left, queue, point);
     }
-}
-
-void printKDTreeNode(KDTreeNode *kdTreeNode) {
-    if (kdTreeNode == NULL)
-        return;
 }
