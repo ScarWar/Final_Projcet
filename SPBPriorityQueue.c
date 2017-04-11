@@ -59,7 +59,9 @@ SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue *source, int index, double value) {
     if (source == NULL) return SP_BPQUEUE_INVALID_ARGUMENT;
     int i = source->currSize;
     bool isFull = source->currSize == source->maxSize;
-    while (i > 0 && (value > source->data[i - 1].value || (value == source->data[i - 1].value && index > source->data->index))) i--;
+    while (i > 0 &&
+           (value > source->data[i - 1].value || (value == source->data[i - 1].value && index > source->data->index)))
+        i--;
     if (i == 0 && isFull) return SP_BPQUEUE_SUCCESS;
     if (isFull) {
         int start = 0;
@@ -78,7 +80,7 @@ SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue *source, int index, double value) {
     source->data[i].value = value;
     source->data[i].index = index;
 
-    if (isFull) return SP_BPQUEUE_SUCCESS; //SP_BPQUEUE_FULL;
+    if (isFull) return SP_BPQUEUE_SUCCESS;
     source->currSize++;
 
     return SP_BPQUEUE_SUCCESS;
@@ -111,14 +113,14 @@ SP_BPQUEUE_MSG spBPQueuePeekLast(SPBPQueue *source, BPQueueElement *res) {
 
 double spBPQueueMinValue(SPBPQueue *source) {
     BPQueueElement element;
-    if (spBPQueuePeek(source, &element) != SP_BPQUEUE_SUCCESS) return 0; // todo think about this
+    if (spBPQueuePeek(source, &element) != SP_BPQUEUE_SUCCESS) return 0;
     return element.value;
 }
 
 
 double spBPQueueMaxValue(SPBPQueue *source) {
     BPQueueElement element;
-    if (spBPQueuePeekLast(source, &element) != SP_BPQUEUE_SUCCESS) return 0; // todo think about this
+    if (spBPQueuePeekLast(source, &element) != SP_BPQUEUE_SUCCESS) return 0;
     return element.value;
 }
 
