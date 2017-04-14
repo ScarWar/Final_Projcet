@@ -18,7 +18,7 @@
  * spLoggerCreate 		- Creates and initializes the logger
  * spLoggerDestroy		- Closes are frees all resources of the logger
  * spLoggerPrintError   - Prints error messages at leves {Error, Warning, Info, Debug}
- * spLoggerPrintWarning - Prints warnning messages at levels {Warning, Info, Debug}
+ * spLoggerPrintWarning - Prints warning messages at levels {Warning, Info, Debug}
  * spLoggerPrintInfo    - Prints info messages at levels {Info, Debug}
  * spLoggerPrintDebug   - Prints debug messages at level {Debug}
  * spLoggerPrintMsg     - Prints the exact message at any level (Without formatting)
@@ -96,7 +96,7 @@ void spLoggerDestroy();
  *
  * @param msg     	- The message to printed
  * @param file    	- A string representing the filename in which spLoggerPrintError call occurred
- * @param function 	- A string representing the function name in which spLoggerPrintError call ocurred
+ * @param function 	- A string representing the function name in which spLoggerPrintError call occurred
  * @param line		- A string representing the line in which the function call occurred
  * @return
  * SP_LOGGER_UNDIFINED 			- If the logger is undefined

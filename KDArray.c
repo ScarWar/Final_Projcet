@@ -68,7 +68,7 @@ KDArray *init(SPPoint **arr, size_t size) {
     return kdArray;
 }
 
-int freeKDArray(KDArray *kdArray) { // TODO add end cases
+int destroyKDArray(KDArray *kdArray) { // TODO add end cases
     if (kdArray == NULL) return 0;
 
     // Free point array, including each point
@@ -360,7 +360,7 @@ double getMedian(KDArray *kdArray, int i) {
     return spPointGetAxisCoor(kdArray->arr[kdArray->mat[i][mid - 1]], i);
 }
 
-void freeKDArrayLeaf(KDArray *kdArray) {
+void destroyKDArrayLeaf(KDArray *kdArray) {
     if (kdArray == NULL) return;
 
     spPointDestroy(*kdArray->arr);

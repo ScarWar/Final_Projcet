@@ -67,7 +67,7 @@ KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim) {
 
         // Create a copy of the point and free the kdArray
         kdTreeNode->data = spPointCopy(*getArr(kdArray));
-        freeKDArrayLeaf(kdArray);
+        destroyKDArrayLeaf(kdArray);
 
         return kdTreeNode;
     }
@@ -98,13 +98,13 @@ KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim) {
         destroyKDTreeNode(kdTreeNode->right);
         free(kdTreeNode);
         free(tmpArray);
-        freeKDArray(kdArray);
+        destroyKDArray(kdArray);
         return NULL;
     }
 
     // Free memory of tmpArray and kdArray
     free(tmpArray);
-    freeKDArray(kdArray);
+    destroyKDArray(kdArray);
 
     return kdTreeNode;
 }
