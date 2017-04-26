@@ -7,7 +7,7 @@
 
 typedef struct kd_array_t KDArray;
 
-typedef struct double_tuple_t DoubleTuple;
+typedef struct tuple_t Tuple;
 
 /**
  * Create a kdArray
@@ -47,7 +47,7 @@ KDArray **Split(KDArray *kdArray, int coor);
  * @param size - The number of points in the array
  * @param i - The coordinate for which we sort the array
  */
-void sortByCoor(DoubleTuple *trgt, SPPoint **arr, size_t size, int i);
+void sortByCoor(Tuple *trgt, SPPoint **arr, size_t size, int i);
 
 /**
  * a compare function for DoubleTuple type

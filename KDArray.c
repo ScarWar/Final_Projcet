@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "KDArray.h"
 
+
 typedef struct kd_array_t {
     int dim;
     size_t size;
@@ -8,13 +9,13 @@ typedef struct kd_array_t {
     SPPoint **arr;
 } KDArray;
 
-typedef struct double_tuple_t {
+typedef struct tuple_t {
     double val;
     int index;
-} DoubleTuple;
+} Tuple;
 
 KDArray *init(SPPoint **arr, size_t size) {
-    if (arr == NULL || size <= 0) return NULL; // TODO error message
+    if (arr == NULL) return NULL; // TODO error message
 
     KDArray *kdArray;
     if (!(kdArray = malloc(sizeof(KDArray))))
@@ -55,7 +56,7 @@ KDArray *init(SPPoint **arr, size_t size) {
 
 
     // Filling the matrix with sorted indexes
-    DoubleTuple *tmp = malloc(size * sizeof(DoubleTuple));
+    Tuple *tmp = malloc(size * sizeof(Tuple));
     // insert indexes to mat (using SPPoint element index)
     for (int i = 0; i < kdArray->dim; ++i) {
         sortByCoor(tmp, arr, size, i);
@@ -87,27 +88,33 @@ int destroyKDArray(KDArray *kdArray) { // TODO add end cases
 }
 
 KDArray **Split(KDArray *kdArray, int coor) {
-    if (kdArray == NULL || !(0 <= coor && coor <= kdArray->dim - 1))
-        return NULL; // TODO error message
+    KDArray *kdLeft = NULL, *kdRight = NULL;
+    int *x = NULL, *map1 = NULL, *map2 = NULL;
+    int freeLeftMat = -1, freeLeftArr = 0;
+    int freeRightMat = -1, freeRightArr = 0;
+
+
+    if (kdArray == NULL || !(0 <= coor && coor <= kdArray->dim - 1)) {
+        // TODO error message
+        return NULL;
+    }
 
     size_t mid = kdArray->size & 1 ? 1 + kdArray->size >> 1 : kdArray->size >> 1;
-    KDArray *kdLeft, *kdRight;
-    if (!(kdLeft = malloc(sizeof(KDArray))))
-        return NULL; // TODO error message
+
+    if (!(kdLeft = malloc(sizeof(KDArray)))) {
+        // TODO error message
+        goto freeMem;
+    }
 
     if (!(kdRight = malloc(sizeof(KDArray)))) {
-        free(kdLeft);
-        return NULL; // TODO error message
+        // TODO error message
+        goto freeMem;
     }
 
     // Create a characteristic vector of the left half plane
-    int *x;
     if (!(x = malloc(kdArray->size * sizeof(int)))) {
-
-        free(kdLeft);
-        free(kdRight);
-
-        return NULL; // TODO error message
+        // TODO error message
+        goto freeMem;
     }
 
     for (int j = 0; j < kdArray->size; ++j) {
@@ -115,23 +122,13 @@ KDArray **Split(KDArray *kdArray, int coor) {
     }
 
     // Create a map for indexes of each half plane
-    int *map1, *map2;
     if (!(map1 = malloc(kdArray->size * sizeof(int)))) {
-
-        free(kdLeft);
-        free(kdRight);
-
-        free(x);
-        return NULL; // TODO error message
+        // TODO error message
+        goto freeMem;
     }
     if (!(map2 = malloc(kdArray->size * sizeof(int)))) {
-
-        free(kdLeft);
-        free(kdRight);
-
-        free(x);
-        free(map1);
-        return NULL; // TODO error message
+        // TODO error message
+        goto freeMem;
     }
 
     // Fill the characteristic vector
@@ -163,135 +160,62 @@ KDArray **Split(KDArray *kdArray, int coor) {
     kdRight->size = kdArray->size - mid;
 
     if (!(kdLeft->mat = malloc(kdLeft->dim * sizeof(*kdLeft->mat)))) {
-        free(kdLeft);
-        free(kdRight);
-
-        free(x);
-        free(map1);
-        free(map2);
-
-        return NULL; // TODO error message
+        // TODO error message
+        goto freeMem;
     }
     for (int k = 0; k < kdArray->dim; ++k) {
         if (!(kdLeft->mat[k] = malloc(kdLeft->size * sizeof(kdLeft->mat)))) {
-
-            free(x);
-            free(map1);
-            free(map2);
-
-            for (int i = 0; i < k; ++i) {
-                free(kdLeft->mat[i]);
-            }
-            free(kdLeft->mat);
-            free(kdLeft);
-
-            free(kdRight);
-
-            return NULL; // TODO error message
+            // TODO error message
+            freeLeftMat = k;
+            goto freeMem;
         }
     }
+    freeLeftMat = kdArray->dim;
 
-    if (!(kdRight->mat = malloc(kdRight->dim * sizeof(*kdRight->mat))))
-        return NULL; // TODO error message
+    if (!(kdRight->mat = malloc(kdRight->dim * sizeof(*kdRight->mat)))) {
+        // TODO error message
+        goto freeMem;
+    }
     for (int k = 0; k < kdArray->dim; ++k) {
         if (!(kdRight->mat[k] = malloc(kdRight->size * sizeof(kdRight->mat)))) {
-
-            free(x);
-            free(map1);
-            free(map2);
-
-            for (int i = 0; i < kdArray->dim; ++i) {
-                free(kdLeft->mat[i]);
-            }
-            free(kdLeft->mat);
-            free(kdLeft);
-
-            for (int i = 0; i < k; ++i) {
-                free(kdRight->mat[i]);
-            }
-            free(kdRight->mat);
-            free(kdRight);
-
-            return NULL; // TODO error message
+            // TODO error message
+            freeRightMat = k;
+            goto freeMem;
         }
     }
+    freeRightMat = kdArray->dim;
 
     if (!(kdLeft->arr = malloc(kdLeft->size * sizeof(SPPoint *)))) {
-
-        free(x);
-        free(map1);
-        free(map2);
-
-        for (int i = 0; i < kdArray->dim; ++i) {
-            free(kdLeft->mat[i]);
-        }
-        free(kdLeft->mat);
-        free(kdLeft);
-
-        for (int i = 0; i < kdArray->dim; ++i) {
-            free(kdRight->mat[i]);
-        }
-        free(kdRight->mat);
-        free(kdRight);
-
-        return NULL; // TODO error message
+        // TODO error message
+        goto freeMem;
     }
+    freeLeftArr = 1;
 
     if (!(kdRight->arr = malloc((kdRight->size * sizeof(SPPoint *))))) {
-
-        free(x);
-        free(map1);
-        free(map2);
-
-        for (int i = 0; i < kdArray->dim; ++i) {
-            free(kdLeft->mat[i]);
-        }
-        free(kdLeft->mat);
-        free(kdLeft->arr);
-        free(kdLeft);
-
-        for (int i = 0; i < kdArray->dim; ++i) {
-            free(kdRight->mat[i]);
-        }
-        free(kdRight->mat);
-        free(kdRight);
+        // TODO error message
+        goto freeMem;
 
         return NULL; // TODO error message
     }
+    freeRightArr = 1;
 
+    // Fill the left and the right KDArray
     for (int i = 0; i < kdArray->dim; ++i) {
         index1 = 0, index2 = 0;
         for (int j = 0; j < kdArray->size; ++j) {
+            // Put int deceleration outside
             int index = kdArray->mat[i][j];
             if (x[index] == 0) {
-                kdLeft->mat[i][index1++] = map1[index]; // TODO does the map needed?
+                kdLeft->mat[i][index1++] = map1[index];
             } else {
-                kdRight->mat[i][index2++] = map2[index]; // TODO does the map needed?
+                kdRight->mat[i][index2++] = map2[index];
             }
         }
     }
 
     KDArray **pArray;
     if (!(pArray = malloc(2 * sizeof(KDArray *)))) {
-        free(x);
-        free(map1);
-        free(map2);
-
-        for (int i = 0; i < kdArray->dim; ++i) {
-            free(kdLeft->mat[i]);
-        }
-        free(kdLeft->mat);
-        free(kdLeft->arr);
-        free(kdLeft);
-
-        for (int i = 0; i < kdArray->dim; ++i) {
-            free(kdRight->mat[i]);
-        }
-        free(kdRight->mat);
-        free(kdRight->arr);
-        free(kdRight);
-
-        return NULL; // TODO error message
+        goto freeMem; // TODO error message
     }
 
     for (size_t i = 0; i < kdArray->size; ++i) {
@@ -306,17 +230,36 @@ KDArray **Split(KDArray *kdArray, int coor) {
     pArray[1] = kdRight;
 
 
+    free(x);
+    free(map1);
+    free(map2);
+    return pArray;
+
     // Free temporary memory allocated for the method
-//    freeMem:
+    freeMem:
     free(x);
     free(map1);
     free(map2);
 
-    return pArray;
+    for (int i = 0; i < freeLeftMat; ++i) {
+        free(kdLeft->mat[i]);
+    }
+    if (freeLeftMat >= 0) free(kdLeft->mat);
+    if (freeLeftArr) free(kdLeft->arr);
+    free(kdLeft);
+
+    for (int i = 0; i < freeRightMat; ++i) {
+        free(kdRight->mat[i]);
+    }
+    if (freeRightMat >= 0) free(kdRight->mat);
+    if (freeRightArr) free(kdRight->arr);
+    free(kdRight);
+
+    return NULL;
 }
 
-void sortByCoor(DoubleTuple *trgt, SPPoint **arr, size_t size, int i) {
-    if (arr == NULL || size == 0 || !(0 <= i && i<= spPointGetDimension(*arr))) {
+void sortByCoor(Tuple *trgt, SPPoint **arr, size_t size, int i) {
+    if (arr == NULL || size == 0 || !(0 <= i && i <= spPointGetDimension(*arr))) {
         // TODO error message
         return;
     }
@@ -324,12 +267,12 @@ void sortByCoor(DoubleTuple *trgt, SPPoint **arr, size_t size, int i) {
         trgt[j].val = spPointGetAxisCoor(arr[j], i);
         trgt[j].index = j;
     }
-    qsort(trgt, size, sizeof(DoubleTuple), cmpFunc);
+    qsort(trgt, size, sizeof(Tuple), cmpFunc);
 }
 
 int cmpFunc(const void *a, const void *b) {
-    const DoubleTuple *da = (const DoubleTuple *) a;
-    const DoubleTuple *db = (const DoubleTuple *) b;
+    const Tuple *da = (const Tuple *) a;
+    const Tuple *db = (const Tuple *) b;
     return (da->val > db->val) - (da->val < db->val);
 }
 
