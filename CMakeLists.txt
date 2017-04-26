@@ -16,5 +16,5 @@ set(SOURCE_FILES main.c
         SPLogger.c
         SPLogger.h
         SPImageProc.h
-        )
+        SPConfig.c)
 add_executable(Final_Projcet ${SOURCE_FILES})
