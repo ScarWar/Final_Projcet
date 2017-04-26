@@ -7,24 +7,28 @@
 
 typedef struct kd_array_t KDArray;
 
-typedef struct double_tuple_t DoubleTuple;
+typedef struct tuple_t Tuple;
 
 /**
- *
- * @param arr
- * @param size
- * @return
+ * Create a kdArray
+ * @param arr   - An array of points
+ * @param size  - Number of points
+ * @return a pointer to a KDArray
  */
 KDArray *init(SPPoint **arr, size_t size);
 
 /**
- * frees memory of kdArray - frees memory from kdArray->mat,
- * frees all points from kdArray->arr
+ * free all used memory of kdArray
  * @param kdArray
  * @return if successful return 1, otherwise 0
  */
-int freeKDArray(KDArray *kdArray);
+int destroyKDArray(KDArray *kdArray);
 
+/**
+ * free all used memory of kdArray
+ * @param kdArray
+ */
+void destroyKDArrayLeaf(KDArray *kdArray);
 
 /**
  *
@@ -43,7 +47,7 @@ KDArray **Split(KDArray *kdArray, int coor);
  * @param size - The number of points in the array
  * @param i - The coordinate for which we sort the array
  */
-void sortByCoor(DoubleTuple *trgt, SPPoint **arr, size_t size, int i);
+void sortByCoor(Tuple *trgt, SPPoint **arr, size_t size, int i);
 
 /**
  * a compare function for DoubleTuple type
@@ -90,7 +94,6 @@ SPPoint **getArr(KDArray *kdArray);
  */
 double getMedian(KDArray *kdArray, int i);
 
-void freeKDArrayLeaf(KDArray *kdArray);
 
 
 #endif //KDTREE_KDARRAY_H
