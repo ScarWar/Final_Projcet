@@ -56,6 +56,8 @@ void spLoggerDestroy() {
 
 SP_LOGGER_MSG spLoggerPrintError(const char *msg, const char *file,
                                  const char *function, const int line) {
+    if (logger == NULL) return SP_LOGGER_UNDIFINED;
+
     if (logger->level < SP_LOGGER_ERROR_LEVEL) return SP_LOGGER_SUCCESS;
 
     if (file == NULL || function == NULL || line < 0)
@@ -70,6 +72,8 @@ SP_LOGGER_MSG spLoggerPrintError(const char *msg, const char *file,
 
 SP_LOGGER_MSG spLoggerPrintWarning(const char *msg, const char *file,
                                    const char *function, const int line) {
+    if (logger == NULL) return SP_LOGGER_UNDIFINED;
+
     if (logger->level < SP_LOGGER_WARNING_ERROR_LEVEL) return SP_LOGGER_SUCCESS;
 
     if (file == NULL || function == NULL || msg == NULL || line < 0)
@@ -83,6 +87,8 @@ SP_LOGGER_MSG spLoggerPrintWarning(const char *msg, const char *file,
 }
 
 SP_LOGGER_MSG spLoggerPrintInfo(const char *msg) {
+    if (logger == NULL) return SP_LOGGER_UNDIFINED;
+
     if (logger->level < SP_LOGGER_INFO_WARNING_ERROR_LEVEL) return SP_LOGGER_SUCCESS;
 
     if (msg == NULL) return SP_LOGGER_INVAlID_ARGUMENT;
@@ -95,6 +101,8 @@ SP_LOGGER_MSG spLoggerPrintInfo(const char *msg) {
 
 SP_LOGGER_MSG spLoggerPrintDebug(const char *msg, const char *file,
                                  const char *function, const int line) {
+    if (logger == NULL) return SP_LOGGER_UNDIFINED;
+
     if (logger->level < SP_LOGGER_DEBUG_INFO_WARNING_ERROR_LEVEL) return SP_LOGGER_SUCCESS;
 
     if (file == NULL || function == NULL || msg == NULL || line < 0)

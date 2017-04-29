@@ -2,6 +2,7 @@
 #define KDTREE_KDTREE_H
 
 #include "SPBPriorityQueue.h"
+#include "KDArray.h"
 
 typedef struct kd_tree_t KDTree;
 
@@ -14,12 +15,12 @@ typedef enum split_method_t {
 } SplitMethod;
 
 /**
- * Create a KDTree using KDTreeNodes
- * and Split method
- * @param kdArray   - A pointer to a KDArray
+ * Create a KDTree using KDTreeNodes and Split method
+ * @param kdArray       - A pointer to a KDArray
+ * @param splitMethod   - The split method used to split
  * @return
  */
-KDTree *createKDTree(KDArray *kdArray);
+KDTree *createKDTree(KDArray *kdArray, SplitMethod splitMethod);
 
 /**
  * Free all the memory used in for the tree
@@ -31,18 +32,18 @@ void destroyKDTree(KDTree *kdTree);
  * Creates a KDTree Node using the schema -
  * -  If the size of the KDArray equals 1 than create a leaf
  * node such that:
- *    val = INVALID
- *    dim = INVALID
- *    left = NULL
- *    right = NULL
- *    data = KDArray->Point
+ *                  val = INVALID
+ *                  dim = INVALID
+ *                  left = NULL
+ *                  right = NULL
+ *                  data = KDArray->Point
  * -  Otherwise split the KDArray using {spKDTreeSplitMethod}
  *    and {dim}, and set
- *    val = INVALID
- *    dim = splitDim
- *    left = KDTreeNode(leftKDArray, splitDim)
- *    right = KDTreeNode(rightKDArray, splitDim)
- *    data = NULL
+ *                  val = INVALID
+ *                  dim = splitDim
+ *                  left = KDTreeNode(leftKDArray, splitDim)
+ *                  right = KDTreeNode(rightKDArray, splitDim)
+ *                  data = NULL
  *
  * If kdArray is needed for future uses create
  * a copy otherwise the kdArray will be destroyed
@@ -50,7 +51,7 @@ void destroyKDTree(KDTree *kdTree);
  * @param dim       - The dim for which the mode is created
  * @return A valid KdTree node
  */
-KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim);
+KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim, SplitMethod splitMethod);
 
 /**
  * Free all the memory used in for the tree
@@ -133,9 +134,10 @@ int isLeaf(KDTreeNode *kdTreeNode);
  * square distance between the points
  * @param kdTree    - A pointer to KDTree
  * @param point     - The query point
+ * @param spKNN     - Number of points to return
  * @return spKNN nearest points in the tree to {point}
  */
-SPBPQueue *kNearestNeighbors(KDTree *kdTree, SPPoint *point);
+SPBPQueue *kNearestNeighbors(KDTree *kdTree, SPPoint *point, int spKNN);
 
 /**
  * Find nearest points recursively

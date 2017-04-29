@@ -12,7 +12,7 @@ extern "C" {
 namespace sp {
 
 /**
- * A class which supports different image processing functionalites.
+ * A class which supports different image processing functionalities.
  */
 class ImageProc {
 private:

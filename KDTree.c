@@ -8,11 +8,6 @@
 #define INVALID -1 // TODO change if needed
 #define SQ(x) ((x) * (x))
 
-
-// For test only
-#define spKDTreeSplitMethod RANDOM // TODO change, Just for test
-#define spKNN 2 // TODO change, just for test
-
 struct kd_tree_t {
     KDTreeNode *root;
 };
@@ -25,9 +20,7 @@ struct kd_tree_node_t {
     SPPoint *data;
 };
 
-// TODO change the signature so the split method is also a parameter
-// KDTree *createKDTree(KDArray *kdArray, SplitMethod splitMethod)
-KDTree *createKDTree(KDArray *kdArray) {
+KDTree *createKDTree(KDArray *kdArray, SplitMethod splitMethod) {
     if (kdArray == NULL) {
         return NULL; // TODO error message
     }
@@ -37,8 +30,8 @@ KDTree *createKDTree(KDArray *kdArray) {
         return NULL; // TODO error message
     }
 
-    int splitDim = getSplitDim(kdArray, spKDTreeSplitMethod, 0);
-    kdTree->root = createKDTreeNode(kdArray, splitDim);
+    int splitDim = getSplitDim(kdArray, splitMethod, 0);
+    kdTree->root = createKDTreeNode(kdArray, splitDim, RANDOM);
     return kdTree;
 }
 
@@ -47,7 +40,7 @@ void destroyKDTree(KDTree *kdTree) {
     free(kdTree);
 }
 
-KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim) {
+KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim, SplitMethod splitMethod) {
     int splitDim;
     if (kdArray == NULL) {
         return NULL; // TODO error message
@@ -76,7 +69,7 @@ KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim) {
 
     // Get the next dimension according to the split method
     // and the current dimension
-    splitDim = getSplitDim(kdArray, spKDTreeSplitMethod, dim);
+    splitDim = getSplitDim(kdArray, splitMethod, dim);
 
     // Split the kdArray at {splitDim}
     tmpArray = Split(kdArray, splitDim);
@@ -88,8 +81,8 @@ KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim) {
     kdTreeNode->dim = splitDim;
 
     // Build the KDTreeNode recursively
-    kdTreeNode->left = createKDTreeNode(kdLeft, splitDim);
-    kdTreeNode->right = createKDTreeNode(kdRight, splitDim);
+    kdTreeNode->left = createKDTreeNode(kdLeft, splitDim, splitMethod);
+    kdTreeNode->right = createKDTreeNode(kdRight, splitDim, splitMethod);
     kdTreeNode->data = NULL;
 
     if (kdTreeNode->left == NULL || kdTreeNode->right == NULL) {
@@ -206,9 +199,7 @@ int isLeaf(KDTreeNode *kdTreeNode) {
     return (kdTreeNode->left == NULL) && (kdTreeNode->right == NULL);
 }
 
-// TODO change the signature so K is a parameter
-// SPBPQueue *kNearestNeighbors(KDTree *kdTree, SPPoint *point, int kNN)
-SPBPQueue *kNearestNeighbors(KDTree *kdTree, SPPoint *point) {
+SPBPQueue *kNearestNeighbors(KDTree *kdTree, SPPoint *point, int spKNN) {
     if (kdTree == NULL || point == NULL)
         return NULL;
     SPBPQueue *queue = spBPQueueCreate(spKNN); // TODO Change

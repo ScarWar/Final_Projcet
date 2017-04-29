@@ -1,16 +1,25 @@
 #include <cstdlib>
 #include <cassert>
 #include <cstring>
+#include <cstdio>
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
-#include <cstdio>
-#include "SPImageProc.h"
 extern "C" {
 #include "SPLogger.h"
 }
+
+// TODO check what import should be used
+// Below imports are from EX_3 which seems to work
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp> //imshow, drawKeypoints, waitKey
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include "opencv2/features2d/features2d.hpp"
+//#include "opencv2/nonfree/features2d.hpp"
+
+#include "SPImageProc.h"
 
 using namespace cv;
 using namespace std;

@@ -63,7 +63,6 @@ SP_CONFIG_MSG setDefaults(SPConfig config) {
     config->spKDTreeSplitMethod = MAX_SPREAD;
 }
 
-
 SP_CONFIG_LINE_MSG spGetParamsFromLine(const char *line, char *variableName, char *value) {
     char *c = (char *) line;
 
@@ -167,7 +166,7 @@ SPConfig spConfigCreate(const char *filename, SP_CONFIG_MSG *msg) {
     }
 }
 
-/*
+/**
  * Returns true if spExtractionMode = true, false otherwise.
  *
  * @param config - the configuration structure
@@ -187,7 +186,7 @@ bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG *msg) {
     return config->spExtractionMode;
 }
 
-/*
+/**
  * Returns true if spMinimalGUI = true, false otherwise.
  *
  * @param config - the configuration structure
@@ -206,7 +205,7 @@ bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG *msg) {
     return config->spMinimalGUI;
 }
 
-/*
+/**
  * Returns the number of images set in the configuration file, i.e the value
  * of spNumOfImages.
  *
@@ -223,10 +222,11 @@ int spConfigGetNumOfImages(const SPConfig config, SP_CONFIG_MSG *msg) {
         *msg = SP_CONFIG_INVALID_ARGUMENT;
         return false;
     }
+    *msg = SP_CONFIG_SUCCESS;
     return config->spNumOfImages;
 }
 
-/*
+/**
  * Returns the number of features to be extracted. i.e the value
  * of spNumOfFeatures.
  *
