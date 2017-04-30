@@ -116,7 +116,7 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
 
 int extractFromImages(SPConfig config) {
     int numOfImages, numOfFeatures;
-    int *nFeatures;
+    int nFeatures;
     char imageDir[MAX_BUFFER_SIZE] = "./images/";   // TODO create spConfigGetImageDir(config);
     char imagePrefix[MAX_BUFFER_SIZE] = "img";      // TODO create spConfigGetImagePrefix(config);
     char imageSuffix[MAX_BUFFER_SIZE] = ".png";     // TODO create spConfigGetImageSuffix(config);
@@ -127,7 +127,6 @@ int extractFromImages(SPConfig config) {
     numOfImages = spConfigGetNumOfImages(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         // TODO error message
-        free(msg);
         return 0;
     }
     numOfFeatures = spConfigGetNumOfFeatures(config, &msg);
@@ -135,33 +134,24 @@ int extractFromImages(SPConfig config) {
         // TODO error message
         return 0;
     }
-    nFeatures = (int *) malloc(sizeof(int));
-    if (!nFeatures) {
-        // TODO error message
-        return 0;
-    }
-
     for (int i = 0; i < numOfImages; ++i) {
         if (sprintf(path, "%s%s%d%s", imageDir, imagePrefix, i, imageSuffix) < 0) {
             // TODO error message
-            free(nFeatures);
             return 0;
         }
         // TODO check bug
-        imageFeatures = sp::ImageProc::getImageFeatures(path, i, nFeatures);
+        imageFeatures = sp::ImageProc::getImageFeatures(path, i, &nFeatures);
         if (!imageFeatures) {
             // TODO error message
-            free(nFeatures);
             return 0;
         }
         if (sprintf(path, "%s%s%d.%s", imageDir, imagePrefix, i, FEATURE_FILE_TYPE) < 0) {
             // TODO error message
-            free(nFeatures);
             return 0;
         }
-        if (!createFeaturesFile(path, imageFeatures, spPointGetDimension(*imageFeatures), i, *nFeatures)) {
+        if (!createFeaturesFile(path, imageFeatures, spPointGetDimension(*imageFeatures), i, nFeatures)) {
             // TODO error message
-            free(nFeatures);
+            return 0;
         }
         free(imageFeatures);
     }
@@ -170,31 +160,20 @@ int extractFromImages(SPConfig config) {
 
 SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
     int numOfImages, j = 0;
-    int *numOfFeatures, *nFeatures;
+    int *numOfFeatures, nFeatures;
     char imageDir[MAX_BUFFER_SIZE] = "./images/";   // TODO create spConfigGetImageDir(config);
     char imagePrefix[MAX_BUFFER_SIZE] = "img";      // TODO create spConfigGetImagePrefix(config);
     char path[MAX_BUFFER_SIZE];
-    SP_CONFIG_MSG *msg;
+    SP_CONFIG_MSG msg;
     SPPoint ***tmpFeatures, **tmpImageFeatures, **features = NULL;
 
     if (!totalNumOfFeatures) {
         // TODO error message
         return NULL;
     }
-    msg = (SP_CONFIG_MSG *) malloc(sizeof(SP_CONFIG_MSG));
-    if (!msg) {
-        // TODO error message
-        return NULL;
-    }
 
-    nFeatures = (int *) malloc(sizeof(int));
-    if (!nFeatures) {
-        // TODO error message
-        return NULL;
-    }
-
-    numOfImages = spConfigGetNumOfImages(config, msg);
-    if (*msg != SP_CONFIG_SUCCESS) {
+    numOfImages = spConfigGetNumOfImages(config, &msg);
+    if (msg != SP_CONFIG_SUCCESS) {
         // TODO error message
         return NULL;
     }
@@ -208,28 +187,34 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
     tmpFeatures = (SPPoint ***) malloc(sizeof(SPPoint **));
     if (!tmpFeatures) {
         // TODO error message
+        free(numOfFeatures);
         return NULL;
     }
 
     for (int i = 0; i < numOfImages; ++i) {
         if (sprintf(path, "%s%s%d.%s", imageDir, imagePrefix, i, FEATURE_FILE_TYPE) < 0) {
             // TODO error message
+            free(numOfFeatures);
+            free(tmpFeatures);
             return NULL;
         }
-        tmpImageFeatures = readFeaturesFile(path, nFeatures);
+        tmpImageFeatures = readFeaturesFile(path, &nFeatures);
         if (!tmpImageFeatures) {
             // TODO error message
+            free(numOfFeatures);
+            free(tmpFeatures);
             return NULL;
         }
-        totalNumOfFeatures += *nFeatures;
-        numOfFeatures[i] = *nFeatures;
+        totalNumOfFeatures += nFeatures;
+        numOfFeatures[i] = nFeatures;
         tmpFeatures[j++] = tmpImageFeatures;
         free(tmpImageFeatures);
     }
-    free(nFeatures);
     features = (SPPoint **) malloc(*totalNumOfFeatures * sizeof(SPPoint *));
     if (!features) {
         // TODO error message
+        free(numOfFeatures);
+        free(tmpFeatures);
         return NULL;
     }
     j = 0;
@@ -238,7 +223,8 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
             features[j++] = tmpFeatures[i][k];
         }
     }
-
+    free(numOfFeatures);
+    free(tmpFeatures);
     return features;
 }
 
@@ -294,13 +280,13 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     queryFeatures = sp::ImageProc::getImageFeatures(queryPath, -1, &numOfFeatures);
     if (!queryFeatures) {
         // TODO error message
-        free(msg);
         return 0;
     }
 
     imageRank = (int *) malloc(numOfImages * sizeof(int));
     if (!imageRank) {
         // TODO error message
+        free(queryFeatures);
         return 0;
     }
 
@@ -324,6 +310,8 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     int *indexArray = (int *) malloc(numOfSimilarImages * sizeof(int));
     if (!indexArray) {
         // TODO error message
+        free(queryFeatures);
+        free(imageRank);
         return 0;
     }
     for (int i = 0; i < numOfSimilarImages; ++i) {
@@ -360,12 +348,18 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     bool minimalGUI = spConfigMinimalGui(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         // TODO error message
+        free(queryFeatures);
+        free(imageRank);
+        free(indexArray);
         return 0;
     }
     if (!minimalGUI) printf("Best candidates for - %s - are:\n", queryPath);
     for (int k = 0; k < numOfSimilarImages; ++k) {
         if (sprintf(path, "%s%s%d%s", imageDir, imagePrefix, indexArray[k], imageSuffix) < 0) {
             // TODO error message
+            free(queryFeatures);
+            free(imageRank);
+            free(indexArray);
             return NULL;
         }
         if (minimalGUI) {
@@ -375,5 +369,8 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
         } else
             printf("%s\n", path);
     }
+    free(queryFeatures);
+    free(imageRank);
+    free(indexArray);
     return 1;
 }
