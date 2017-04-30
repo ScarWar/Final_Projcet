@@ -1,13 +1,22 @@
 #include <stdlib.h>
 #include <stdio.h>
+
+extern "C" {
+#include "SPConfig.h"
 #include "SPPoint.h"
 #include "KDArray.h"
 #include "KDTree.h"
-
+}
 
 int main() {
-    /*--------------- Simple test ---------------*/
-    double dataA[2] = {1, 2},
+    SP_CONFIG_MSG msg;
+    SPConfig config = spConfigCreate("./spcbir.config", &msg);
+    if (msg != SP_CONFIG_SUCCESS) return 1;
+
+    printf("%d", spConfigGetNumOfFeatures(config, &msg));
+
+    /*--------------- Simple test ---------------
+     double dataA[2] = {1, 2},
             dataB[2] = {123, 70},
             dataC[2] = {2, 7},
             dataD[2] = {9, 11},
@@ -17,7 +26,7 @@ int main() {
     SPPoint *c = spPointCreate(dataC, 2, 2);
     SPPoint *d = spPointCreate(dataD, 2, 3);
     SPPoint *e = spPointCreate(dataE, 2, 4);
-    SPPoint **arr = malloc(5 * sizeof(SPPoint *));
+    SPPoint **arr = (SPPoint **) malloc(5 * sizeof(SPPoint *));
     *arr = a;
     *(arr + 1) = b;
     *(arr + 2) = c;
@@ -46,4 +55,5 @@ int main() {
     spPointDestroy(point);
     spBPQueueDestroy(q);
     destroyKDTree(kdTree);
+     */
 }

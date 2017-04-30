@@ -232,4 +232,3 @@ void sp::ImageProc::showImage(const char* imgPath) {
 	}
 
 }
-

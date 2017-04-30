@@ -6,7 +6,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include "opencv2/features2d/features2d.hpp"
-#include "opencv2/nonfree/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
 #include "SPImageProc.h"
 
 #include "main_aux.h"
@@ -123,11 +123,11 @@ int extractFromImages(SPConfig config) {
     char path[MAX_BUFFER_SIZE];
     SPPoint **imageFeatures;
     SP_CONFIG_MSG msg;
+    sp::ImageProc imageProc(config);
 
     numOfImages = spConfigGetNumOfImages(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         // TODO error message
-        free(msg);
         return 0;
     }
     numOfFeatures = spConfigGetNumOfFeatures(config, &msg);
@@ -148,7 +148,7 @@ int extractFromImages(SPConfig config) {
             return 0;
         }
         // TODO check bug
-        imageFeatures = sp::ImageProc::getImageFeatures(path, i, nFeatures);
+        imageFeatures = imageProc.getImageFeatures(path, i, nFeatures);
         if (!imageFeatures) {
             // TODO error message
             free(nFeatures);
@@ -284,6 +284,8 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
 
     spKNN = 5; // TODO create spConfigGetKNN(config, msg);
 
+    sp::ImageProc imageProc(config);
+
     numOfImages = spConfigGetNumOfImages(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         // TODO error message
@@ -291,10 +293,9 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     }
 
     // TODO check bug
-    queryFeatures = sp::ImageProc::getImageFeatures(queryPath, -1, &numOfFeatures);
+    queryFeatures = imageProc.getImageFeatures(queryPath, -1, &numOfFeatures);
     if (!queryFeatures) {
         // TODO error message
-        free(msg);
         return 0;
     }
 
@@ -354,9 +355,6 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
 
     // Display result
     char path[MAX_BUFFER_SIZE];
-    char imageDir[MAX_BUFFER_SIZE] = "./images/";   // TODO create spConfigGetImageDir(config, msg);
-    char imagePrefix[MAX_BUFFER_SIZE] = "img";      // TODO create spConfigGetImagePrefix(config, msg);
-    char imageSuffix[MAX_BUFFER_SIZE] = ".png";     // TODO create spConfigGetImageSuffix(config, msg);
     bool minimalGUI = spConfigMinimalGui(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         // TODO error message
@@ -364,14 +362,12 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     }
     if (!minimalGUI) printf("Best candidates for - %s - are:\n", queryPath);
     for (int k = 0; k < numOfSimilarImages; ++k) {
-        if (sprintf(path, "%s%s%d%s", imageDir, imagePrefix, indexArray[k], imageSuffix) < 0) {
-            // TODO error message
-            return NULL;
+        if (spConfigGetImagePath(path, config, k) != SP_CONFIG_SUCCESS) {
+            return 0;
         }
         if (minimalGUI) {
             scanf("Press any key to show next image\n");
-            // TODO check bug
-            sp::ImageProc::showImage(path);
+            imageProc.showImage(path);
         } else
             printf("%s\n", path);
     }

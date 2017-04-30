@@ -12,8 +12,10 @@
 
 #define BUFFER_LEN 1024
 
+#define INVALID_LINE_MSG "Invalid configuration line"
+#define INVALID_VALUE_MSG "Invalid value - constraint not met"
 
-typedef struct sp_config_t {
+struct sp_config_t {
     bool spExtractionMode;
     bool spMinimalGUI;
     int spNumOfImages;
@@ -42,7 +44,7 @@ typedef enum special_bool {
     OTHER = 2
 } SpecialBool;
 
-SP_CONFIG_MSG setDefaults(SPConfig config) {
+void setDefaults(SPConfig config) {
     config->spExtractionMode = true;
     config->spMinimalGUI = false;
     config->spNumOfImages = -1;
@@ -63,6 +65,10 @@ SP_CONFIG_MSG setDefaults(SPConfig config) {
     config->spKDTreeSplitMethod = MAX_SPREAD;
 }
 
+void printError(const char *filename, int line, char *message) {
+    printf("File: %s\nLine: %d\nMessage: %s\n", filename, line, message);
+}
+
 SP_CONFIG_LINE_MSG spGetParamsFromLine(const char *line, char *variableName, char *value) {
     char *c = (char *) line;
 
@@ -70,7 +76,7 @@ SP_CONFIG_LINE_MSG spGetParamsFromLine(const char *line, char *variableName, cha
     while (isspace(*c)) c++;
 
     // Empty or comment line
-    if (*c == '#' || *c == '\0') return CONFIG_LINE_EMPTY;
+    if (*c == '#' || *c == '\0' || *c == '\n') return CONFIG_LINE_EMPTY;
 
     char *name = variableName;
 
@@ -81,12 +87,14 @@ SP_CONFIG_LINE_MSG spGetParamsFromLine(const char *line, char *variableName, cha
         c++;
         if (*c == '\0') return CONFIG_LINE_INVALID;
     }
+    *name = '\0';
 
     // Find equals sign
     while (*c != '=') {
         c++;
         if (*c == '\0') return CONFIG_LINE_INVALID;
     }
+    c++;
 
     // Skip whitespaces
     while (isspace(*c)) c++;
@@ -101,6 +109,7 @@ SP_CONFIG_LINE_MSG spGetParamsFromLine(const char *line, char *variableName, cha
         val++;
         c++;
     }
+    *val = '\0';
 
     // Skip whitespaces
     while (isspace(*c)) c++;
@@ -111,22 +120,109 @@ SP_CONFIG_LINE_MSG spGetParamsFromLine(const char *line, char *variableName, cha
     return CONFIG_LINE_SUCCESS;
 }
 
-SpecialBool getBool(const char *value) {
-    if (strcmp(value, "true")) {
-        return TRUE;
-    }
-    if (strcmp(value, "false")) {
-        return FALSE;
-    }
-    return OTHER;
+bool getBool(const char *value) {
+    return (bool) strcmp(value, "true");
 }
 
 SP_CONFIG_LINE_MSG spSetVariable(const char *name, const char *value, SPConfig config) {
-    if (strcmp(name, "spExtractionMode")) {
-        SpecialBool val = getBool(value);
-        if (val == OTHER) return CONFIG_LINE_INVALID;
-        config->spExtractionMode = (bool) val;
+    if (!strcmp(name, "spExtractionMode")) {
+        config->spExtractionMode = getBool(value);
+        return CONFIG_LINE_SUCCESS;
     }
+
+    if (!strcmp(name, "spMinimalGUI")) {
+        config->spExtractionMode = getBool(value);
+        return CONFIG_LINE_SUCCESS;
+    }
+
+    if (!strcmp(name, "spNumOfImages")) {
+        int num = atoi(value);
+        if (num < 1) {
+            return CONFIG_LINE_INVALID;
+        }
+        config->spNumOfImages = num;
+        return CONFIG_LINE_SUCCESS;
+    }
+
+    if (!strcmp(name, "spNumOfFeatures")) {
+        int num = atoi(value);
+        if (num < 1) {
+            return CONFIG_LINE_INVALID;
+        }
+        config->spNumOfFeatures = num;
+        return CONFIG_LINE_SUCCESS;
+    }
+
+    if (!strcmp(name, "spPCADimension")) {
+
+        int dim = atoi(value);
+        if (dim < 10 || dim > 28) {
+            return CONFIG_LINE_INVALID;
+        }
+        config->spPCADimension = dim;
+        return CONFIG_LINE_SUCCESS;
+    }
+
+    if (!strcmp(name, "spNumOfSimilarImages")) {
+        int num = atoi(value);
+        if (num < 1) {
+            return CONFIG_LINE_INVALID;
+        }
+        config->spNumOfSimilarImages = num;
+        return CONFIG_LINE_SUCCESS;
+    }
+
+    if (!strcmp(name, "spKNN")) {
+        int knn = atoi(value);
+        if (knn < 1) {
+            return CONFIG_LINE_INVALID;
+        }
+        config->spKNN = knn;
+        return CONFIG_LINE_SUCCESS;
+    }
+
+    if (!strcmp(name, "spLoggerLevel")) {
+        int level = atoi(value);
+        if (level < 1 || level > 4)
+        {
+            return CONFIG_LINE_INVALID;
+        }
+        config->spLoggerLevel = (SP_LOGGER_LEVEL) level;
+        return CONFIG_LINE_SUCCESS;
+    }
+
+    if (!strcmp(name, "spImagesDirectory")) {
+        strcat(config->spImagesDirectory, value);
+        return CONFIG_LINE_SUCCESS;
+    }
+    if (!strcmp(name, "spImagesPrefix")) {
+        strcat(config->spImagesPrefix, value);
+        return CONFIG_LINE_SUCCESS;
+    }
+    if (!strcmp(name, "spImagesSuffix")) {
+        strcat(config->spImagesSuffix, value);
+        return CONFIG_LINE_SUCCESS;
+    }
+    if (!strcmp(name, "spPcaFilename")) {
+        strcat(config->spPcaFilename, value);
+        return CONFIG_LINE_SUCCESS;
+    }
+    if (!strcmp(name, "spLoggerFilename")) {
+        strcat(config->spLoggerFilename, value);
+        return CONFIG_LINE_SUCCESS;
+    }
+    if (!strcmp(name, "spKDTreeSplitMethod")) {
+        SplitMethod method;
+        if (strcmp(value, "RANDOM")) method = RANDOM;
+        else if (strcmp(value, "INCREMENTAL")) method = INCREMENTAL;
+        else if (strcmp(value, "MAX_SPREAD")) method = MAX_SPREAD;
+        else return CONFIG_LINE_INVALID;
+
+        config->spKDTreeSplitMethod = method;
+        return CONFIG_LINE_SUCCESS;
+    }
+
+    return CONFIG_LINE_INVALID;
 }
 
 
@@ -149,12 +245,16 @@ SPConfig spConfigCreate(const char *filename, SP_CONFIG_MSG *msg) {
     }
     setDefaults(config);
 
+    int line_num = 0;
+
     char line[BUFFER_LEN];
     while (fgets(line, BUFFER_LEN, file) != NULL) {
+        line_num++;
         char name[BUFFER_LEN], value[BUFFER_LEN];
         SP_CONFIG_LINE_MSG lineMsg = spGetParamsFromLine(line, name, value);
 
         if (lineMsg == CONFIG_LINE_INVALID) {
+            printError(filename, line_num, INVALID_LINE_MSG);
             spConfigDestroy(config);
             *msg = SP_CONFIG_INVALID_STRING;
             return NULL;
@@ -162,8 +262,18 @@ SPConfig spConfigCreate(const char *filename, SP_CONFIG_MSG *msg) {
 
         if (lineMsg == CONFIG_LINE_EMPTY) continue;
 
+        SP_CONFIG_LINE_MSG line_msg = spSetVariable(name, value, config);
+        if (line_msg != CONFIG_LINE_SUCCESS) {
+            printError(filename, line_num, INVALID_VALUE_MSG);
+            spConfigDestroy(config);
+            *msg = SP_CONFIG_INVALID_ARGUMENT;
+            return NULL;
+        }
 
     }
+
+    *msg = SP_CONFIG_SUCCESS;
+    return config;
 }
 
 /**
@@ -346,3 +456,4 @@ void spConfigDestroy(SPConfig config) {
 
     free(config);
 }
+

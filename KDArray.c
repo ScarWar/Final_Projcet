@@ -2,17 +2,17 @@
 #include "KDArray.h"
 
 
-typedef struct kd_array_t {
+struct kd_array_t {
     int dim;
     size_t size;
     int **mat;
     SPPoint **arr;
-} KDArray;
+};
 
-typedef struct tuple_t {
+struct tuple_t {
     double val;
     int index;
-} Tuple;
+};
 
 KDArray *init(SPPoint **arr, size_t size) {
     if (arr == NULL) return NULL; // TODO error message
@@ -99,7 +99,7 @@ KDArray **Split(KDArray *kdArray, int coor) {
         return NULL;
     }
 
-    size_t mid = kdArray->size & 1 ? 1 + kdArray->size >> 1 : kdArray->size >> 1;
+    size_t mid = kdArray->size / 2 + kdArray->size % 2;
 
     if (!(kdLeft = malloc(sizeof(KDArray)))) {
         // TODO error message
@@ -299,7 +299,7 @@ SPPoint **getArr(KDArray *kdArray) { // TODO error message
 double getMedian(KDArray *kdArray, int i) {
     if (kdArray == NULL)
         return -1; // TODO error message
-    size_t mid = kdArray->size & 1 ? 1 + kdArray->size >> 1 : kdArray->size >> 1;
+    size_t mid = kdArray->size / 2 + kdArray->size % 2;
     return spPointGetAxisCoor(kdArray->arr[kdArray->mat[i][mid - 1]], i);
 }
 
