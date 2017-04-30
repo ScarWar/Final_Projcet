@@ -159,9 +159,9 @@ sp::ImageProc::ImageProc(const SPConfig config) {
 			throw Exception();
 		}
 		SP_CONFIG_MSG msg;
-		bool preprocMode = false;
 		initFromConfig(config);
-		if ((preprocMode = spConfigIsExtractionMode(config, &msg))) {
+        bool preprocMode = spConfigIsExtractionMode(config, &msg);
+		if (preprocMode) {
 			preprocess(config);
 		} else {
 			initPCAFromFile(config);

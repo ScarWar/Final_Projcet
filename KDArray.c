@@ -24,7 +24,9 @@ KDArray *init(SPPoint **arr, size_t size) {
     kdArray->dim = spPointGetDimension(arr[0]);
     kdArray->size = size;
 
-    if (!(kdArray->mat = malloc(kdArray->dim * sizeof(*kdArray->mat)))) {
+    kdArray->mat = malloc(kdArray->dim * sizeof(*kdArray->mat));
+
+    if (kdArray->mat == NULL) {
         free(kdArray);
         return NULL; // TODO error message
     }

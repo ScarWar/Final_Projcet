@@ -59,6 +59,10 @@ void setDefaults(SPConfig config) {
     config->spPcaFilename = malloc(BUFFER_LEN);
     config->spLoggerFilename = malloc(BUFFER_LEN);
 
+    *config->spImagesDirectory = '\0';
+    *config->spImagesPrefix = '\0';
+    *config->spImagesSuffix = '\0';
+
     strcat(config->spPcaFilename, "pca.yml");
     strcat(config->spLoggerFilename, "stdout");
 
@@ -120,19 +124,24 @@ SP_CONFIG_LINE_MSG spGetParamsFromLine(const char *line, char *variableName, cha
     return CONFIG_LINE_SUCCESS;
 }
 
-bool getBool(const char *value) {
-    return (bool) strcmp(value, "true");
+bool getBool(const char *value, SP_CONFIG_LINE_MSG *msg) {
+    *msg = CONFIG_LINE_SUCCESS;
+    if(!strcmp(value, "true")) return true;
+    if(strcmp(value, "false")) *msg = CONFIG_LINE_INVALID;
+    return false;
 }
 
 SP_CONFIG_LINE_MSG spSetVariable(const char *name, const char *value, SPConfig config) {
+    SP_CONFIG_LINE_MSG msg;
+
     if (!strcmp(name, "spExtractionMode")) {
-        config->spExtractionMode = getBool(value);
-        return CONFIG_LINE_SUCCESS;
+        config->spExtractionMode = getBool(value, &msg);
+        return msg;
     }
 
     if (!strcmp(name, "spMinimalGUI")) {
-        config->spExtractionMode = getBool(value);
-        return CONFIG_LINE_SUCCESS;
+        config->spExtractionMode = getBool(value, &msg);
+        return msg;
     }
 
     if (!strcmp(name, "spNumOfImages")) {
@@ -213,9 +222,9 @@ SP_CONFIG_LINE_MSG spSetVariable(const char *name, const char *value, SPConfig c
     }
     if (!strcmp(name, "spKDTreeSplitMethod")) {
         SplitMethod method;
-        if (strcmp(value, "RANDOM")) method = RANDOM;
-        else if (strcmp(value, "INCREMENTAL")) method = INCREMENTAL;
-        else if (strcmp(value, "MAX_SPREAD")) method = MAX_SPREAD;
+        if (!strcmp(value, "RANDOM")) method = RANDOM;
+        else if (!strcmp(value, "INCREMENTAL")) method = INCREMENTAL;
+        else if (!strcmp(value, "MAX_SPREAD")) method = MAX_SPREAD;
         else return CONFIG_LINE_INVALID;
 
         config->spKDTreeSplitMethod = method;
@@ -270,6 +279,22 @@ SPConfig spConfigCreate(const char *filename, SP_CONFIG_MSG *msg) {
             return NULL;
         }
 
+    }
+
+    if (config->spNumOfImages == -1) {
+        printError(filename, line_num, "Parameter spNumOfImages is not set");
+    }
+
+    if (*config->spImagesDirectory == '\0') {
+        printError(filename, line_num, "Parameter spImagesDirectory is not set");
+    }
+
+    if (*config->spImagesSuffix == '\0') {
+        printError(filename, line_num, "Parameter spImagesSuffix is not set");
+    }
+
+    if (*config->spImagesPrefix == '\0') {
+        printError(filename, line_num, "Parameter spImagesPrefix is not set");
     }
 
     *msg = SP_CONFIG_SUCCESS;
@@ -433,7 +458,7 @@ SP_CONFIG_MSG spConfigGetImagePath(char *imagePath, const SPConfig config,
  *  - SP_CONFIG_SUCCESS - in case of success
  */
 SP_CONFIG_MSG spConfigGetPCAPath(char *pcaPath, const SPConfig config) {
-    if (pcaPath == NULL || config == NULL) {
+    if (config == NULL || pcaPath == NULL) {
         return SP_CONFIG_INVALID_ARGUMENT;
     }
 
@@ -455,5 +480,17 @@ void spConfigDestroy(SPConfig config) {
     free(config->spPcaFilename);
 
     free(config);
+}
+
+SplitMethod spConfigGetKDTreeSplitMethod(const SPConfig config) {
+    return config->spKDTreeSplitMethod;
+}
+
+int spConfigGetKNN(const SPConfig config) {
+    return config->spKNN;
+}
+
+int spConfigGetNumOfSimilarImages(const SPConfig config) {
+    return config->spNumOfSimilarImages;
 }
 

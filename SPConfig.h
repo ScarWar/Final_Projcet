@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "SPLogger.h"
+#include "KDTree.h"
 
 /**
  * A data-structure which is used for configuring the system.
@@ -163,6 +164,10 @@ SP_CONFIG_MSG spConfigGetImagePath(char *imagePath, const SPConfig config,
  *  - SP_CONFIG_SUCCESS - in case of success
  */
 SP_CONFIG_MSG spConfigGetPCAPath(char *pcaPath, const SPConfig config);
+
+SplitMethod spConfigGetKDTreeSplitMethod(const SPConfig config);
+int spConfigGetKNN(const SPConfig config);
+int spConfigGetNumOfSimilarImages(const SPConfig config);
 
 /**
  * Frees all memory resources associate with config. 

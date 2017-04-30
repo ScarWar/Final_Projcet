@@ -20,7 +20,7 @@ extern "C" {
 #include "KDTree.h"
 }
 
-#define FEATURE_FILE_TYPE "feats"
+#define FEATURE_FILE_TYPE ".feats"
 #define MAX_BUFFER_SIZE 1024
 
 int createFeaturesFile(char *path, SPPoint **features, int dim, int index, int numOfFeatures) {
@@ -117,9 +117,6 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
 int extractFromImages(SPConfig config) {
     int numOfImages, numOfFeatures;
     int *nFeatures;
-    char imageDir[MAX_BUFFER_SIZE] = "./images/";   // TODO create spConfigGetImageDir(config);
-    char imagePrefix[MAX_BUFFER_SIZE] = "img";      // TODO create spConfigGetImagePrefix(config);
-    char imageSuffix[MAX_BUFFER_SIZE] = ".png";     // TODO create spConfigGetImageSuffix(config);
     char path[MAX_BUFFER_SIZE];
     SPPoint **imageFeatures;
     SP_CONFIG_MSG msg;
@@ -128,51 +125,47 @@ int extractFromImages(SPConfig config) {
     numOfImages = spConfigGetNumOfImages(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         // TODO error message
-        return 0;
+        return 1;
     }
     numOfFeatures = spConfigGetNumOfFeatures(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         // TODO error message
-        return 0;
+        return 1;
     }
     nFeatures = (int *) malloc(sizeof(int));
     if (!nFeatures) {
         // TODO error message
-        return 0;
+        return 1;
     }
 
     for (int i = 0; i < numOfImages; ++i) {
-        if (sprintf(path, "%s%s%d%s", imageDir, imagePrefix, i, imageSuffix) < 0) {
+        if (spConfigGetImagePath(path, config, i) != SP_CONFIG_SUCCESS) {
             // TODO error message
-            free(nFeatures);
-            return 0;
+            break;
         }
         // TODO check bug
         imageFeatures = imageProc.getImageFeatures(path, i, nFeatures);
-        if (!imageFeatures) {
+        if (imageFeatures == NULL) {
             // TODO error message
-            free(nFeatures);
-            return 0;
+            break;
         }
-        if (sprintf(path, "%s%s%d.%s", imageDir, imagePrefix, i, FEATURE_FILE_TYPE) < 0) {
+        if (sprintf(path, "%s%s", path, FEATURE_FILE_TYPE) < 0) {
+            free(imageFeatures);
             // TODO error message
-            free(nFeatures);
-            return 0;
+            break;
         }
         if (!createFeaturesFile(path, imageFeatures, spPointGetDimension(*imageFeatures), i, *nFeatures)) {
             // TODO error message
-            free(nFeatures);
         }
         free(imageFeatures);
     }
-    return 1;
+    free(nFeatures);
+    return 0;
 }
 
 SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
     int numOfImages, j = 0;
     int *numOfFeatures, *nFeatures;
-    char imageDir[MAX_BUFFER_SIZE] = "./images/";   // TODO create spConfigGetImageDir(config);
-    char imagePrefix[MAX_BUFFER_SIZE] = "img";      // TODO create spConfigGetImagePrefix(config);
     char path[MAX_BUFFER_SIZE];
     SP_CONFIG_MSG *msg;
     SPPoint ***tmpFeatures, **tmpImageFeatures, **features = NULL;
@@ -212,7 +205,8 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
     }
 
     for (int i = 0; i < numOfImages; ++i) {
-        if (sprintf(path, "%s%s%d.%s", imageDir, imagePrefix, i, FEATURE_FILE_TYPE) < 0) {
+        spConfigGetImagePath(path, config, i);
+        if (sprintf(path, "%s%s", path, FEATURE_FILE_TYPE) < 0) {
             // TODO error message
             return NULL;
         }
@@ -248,7 +242,7 @@ KDTree *extractKDTree(SPConfig config) {
     SplitMethod splitMethod;
     SPPoint **features;
 
-    splitMethod = MAX_SPREAD;   // TODO create spConfigGetKDTreeSplitMethod(config, msg);
+    splitMethod = spConfigGetKDTreeSplitMethod(config);
 
     // If in extraction mode than extract features from images
     if (spConfigIsExtractionMode(config, &msg)) {
@@ -282,7 +276,7 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     SPBPQueue *knnQueue;
     BPQueueElement qElement;
 
-    spKNN = 5; // TODO create spConfigGetKNN(config, msg);
+    spKNN = spConfigGetKNN(config);
 
     sp::ImageProc imageProc(config);
 
@@ -320,7 +314,7 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
         spBPQueueDestroy(knnQueue);
     }
 
-    numOfSimilarImages = 1; // TODO create spConfigGetNumOfSimilarImages(config, msg);
+    numOfSimilarImages = spConfigGetNumOfSimilarImages(config); // TODO create spConfigGetNumOfSimilarImages(config, msg);
     char continueFlag;
     int *indexArray = (int *) malloc(numOfSimilarImages * sizeof(int));
     if (!indexArray) {
