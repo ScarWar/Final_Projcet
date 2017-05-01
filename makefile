@@ -30,11 +30,11 @@ $(EXEC): $(OBJS)
 	$(CPP) $(OBJS) -L$(LIBPATH) $(LIBS) -o $@
 main.o: main.cpp main_aux.h SPLogger.h SPImageProc.h SPConfig.h \
                 KDTree.h KDArray.h SPPoint.h SPBPriorityQueue.h
-	$(CPP) $(CPP_COMP_FLAG) -I$(INCLUDEPATH) -c $*.cpp
+	$(CPP) $(CPP_COMP_FLAG) $(LDFLAGS) -I$(INCLUDEPATH) -c $*.cpp
 
 main_aux.o: main_aux.cpp main_aux.h SPLogger.h SPImageProc.h SPConfig.h \
                 KDTree.h KDArray.h SPPoint.h SPBPriorityQueue.h
-	$(CPP) $(CPP_COMP_FLAG) -I$(INCLUDEPATH) -c $*.cpp
+	$(CPP) $(CPP_COMP_FLAG) $(LDFLAGS) -I$(INCLUDEPATH) -c $*.cpp
 
 SPImageProc.o: SPImageProc.cpp SPLogger.h SPImageProc.h SPConfig.h \
                 KDTree.h SPPoint.h SPBPriorityQueue.h KDArray.h
