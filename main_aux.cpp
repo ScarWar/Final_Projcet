@@ -243,7 +243,7 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
         }
     }
     free(numOfFeatures);
-    fread(tmpFeatures);
+    free(tmpFeatures);
     return features;
 }
 
