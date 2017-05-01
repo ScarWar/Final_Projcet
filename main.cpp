@@ -1,4 +1,4 @@
-#include <cstdlib.h>
+#include <stdlib.h>
 #include <cstdio.h>
 
 #include "main_aux.h"
