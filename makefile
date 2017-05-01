@@ -45,7 +45,7 @@ KDTree.o: KDTree.c KDTree.h SPPoint.h SPBPriorityQueue.h SPLogger.h \
     $(CC) $(C_COMP_FLAG) -c $*.c
 SPLogger.o: SPLogger.c SPLogger.h
     $(CC) $(C_COMP_FLAG) -c $*.c
-SPBPriorityQueue.o SPBPriorityQueue.c SPBPriorityQueue.h SPLogger.h
+SPBPriorityQueue.o: SPBPriorityQueue.c SPBPriorityQueue.h SPLogger.h
     $(CC) $(C_COMP_FLAG) -c $*.c
 
 clean:
