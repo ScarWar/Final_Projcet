@@ -9,13 +9,13 @@ LIBPATH=/usr/local/lib/opencv-3.1.0/lib/
 LIBS=-lopencv_xfeatures2d -lopencv_features2d \
 -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_core
 
+CFLAGS=-std=c99
 
 CPP_COMP_FLAG = -std=c++11 -Wall -Wextra \
--Werror -DNDEBUG -g
+-Werror -pedantic-errors -DNDEBUG -g
 
 C_COMP_FLAG = -std=c99 -Wall -Wextra \
--Werror -DNDEBUG -g
-#-pedantic-errors
+-Werror -pedantic-errors -DNDEBUG -g
 
 $(EXEC): $(OBJS)
 	$(CPP) $(OBJS) -L$(LIBPATH) $(LIBS) -o $@
