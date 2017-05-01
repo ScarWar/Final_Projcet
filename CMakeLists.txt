@@ -10,7 +10,7 @@ set(CMAKE_C_STANDARD 99)
 message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
 message(STATUS "OpenCV_LIBS=${OpenCV_LIBS}")
 
-set(SOURCE_FILES main.cpp
+set(SOURCE_FILES # main.cpp
         KDTree.h
         KDTree.c
         KDArray.h
@@ -24,6 +24,8 @@ set(SOURCE_FILES main.cpp
         SPLogger.h
         SPImageProc.h
         SPImageProc.cpp
+        unit_tests/unit_test_util.h
+        unit_tests/sp_logger_unit_test.c
         SPConfig.c main_aux.cpp main_aux.h)
 
 add_executable(Final_Projcet ${SOURCE_FILES})

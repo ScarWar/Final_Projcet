@@ -18,12 +18,12 @@ static bool identicalFiles(const char* fname1, const char* fname2) {
 		fclose(fp1);
 		return false;
 	} else {
-		ch1 = getc(fp1);
-		ch2 = getc(fp2);
+		ch1 = (char) getc(fp1);
+		ch2 = (char) getc(fp2);
 
 		while ((ch1 != EOF) && (ch2 != EOF) && (ch1 == ch2)) {
-			ch1 = getc(fp1);
-			ch2 = getc(fp2);
+			ch1 = (char) getc(fp1);
+			ch2 = (char) getc(fp2);
 		}
 		fclose(fp1);
 		fclose(fp2);

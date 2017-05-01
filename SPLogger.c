@@ -93,7 +93,7 @@ SP_LOGGER_MSG spLoggerPrintInfo(const char *msg) {
 
     if (msg == NULL) return SP_LOGGER_INVAlID_ARGUMENT;
 
-    int written = snprintf(buffer, BUFFER_SIZE, "---WARNING---\n- message: %s\n", msg);
+    int written = snprintf(buffer, BUFFER_SIZE, "---INFO---\n- message: %s\n", msg);
     if (written > BUFFER_SIZE) return SP_LOGGER_INVAlID_ARGUMENT;
 
     return spLoggerPrintMsg(buffer);
