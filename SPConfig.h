@@ -173,6 +173,9 @@ int spConfigGetNumOfSimilarImages(const SPConfig config);
 
 SP_LOGGER_LEVEL spConfigGetLoggerLevel(const SPConfig config);
 
+void spConfigGetLoggerFilename(const SPConfig config, char *loggerFilename);
+
+SP_LOGGER_LEVEL spConfigGetLoggerLevel(const SPConfig config);
 
 
 /**

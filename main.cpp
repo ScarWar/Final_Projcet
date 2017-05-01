@@ -1,5 +1,5 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib.h>
+#include <cstdio.h>
 
 #include "main_aux.h"
 

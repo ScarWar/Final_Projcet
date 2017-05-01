@@ -2,7 +2,6 @@
 #include <ctype.h>
 #include <string.h>
 #include "SPConfig.h"
-#include "KDTree.h"
 
 #define SP_CONFIG_OPEN_MODE "r"
 
@@ -496,3 +495,4 @@ void spConfigGetLoggerFilename(const SPConfig config, char *loggerFilename) {
 SP_LOGGER_LEVEL spConfigGetLoggerLevel(const SPConfig config) {
     return config->spLoggerLevel;
 }
+

@@ -1,23 +1,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <opencv2/core/mat.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/xfeatures2d.hpp"
 #include "SPImageProc.h"
 
 #include "main_aux.h"
 
 extern "C" {
-#include "SPLogger.h"
-#include "SPConfig.h"
-#include "SPPoint.h"
-#include "SPBPriorityQueue.h"
-#include "KDArray.h"
-#include "KDTree.h"
 }
 
 #define FEATURE_FILE_TYPE ".feats"
@@ -33,10 +21,7 @@ extern "C" {
 #define ERR_MSG_PATH_CREATION "Error while creating a string"
 #define PCA_DIM_ERROR_MSG "PCA dimension couldn't be resolved"
 #define MINIMAL_GUI_ERROR "Minimal GUI mode couldn't be resolved"
-#define IMAGE_PATH_ERROR "Image path couldn't be resolved"
 #define EXTRACTION_MODE_ERROR "Extraction mode couldn't be resolved"
-#define ERR_MSG_EXTRACTION "Extraction failed"
-
 
 int createFeaturesFile(char *path, SPPoint **features, int dim, int index, int numOfFeatures) {
     FILE *file;
@@ -126,8 +111,8 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
         for (int j = 0; j < dim; ++j) {
             if (!fread(&val, sizeof(double), 1, file)) {
                 fclose(file);
-                for (int j = 0; j < i; ++j) {
-                    spPointDestroy(features[i]);
+                for (int k = 0; k < i; ++k) {
+                    spPointDestroy(features[k]);
                 }
                 free(features);
                 free(data);
@@ -154,7 +139,7 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
 }
 
 int extractFromImages(SPConfig config) {
-    int dim, numOfImages, numOfFeatures, nFeatures;
+    int dim, numOfImages, /*numOfFeatures,*/ nFeatures;
     char path[MAX_BUFFER_SIZE];
     SPPoint **imageFeatures;
     SP_CONFIG_MSG msg;
@@ -165,13 +150,8 @@ int extractFromImages(SPConfig config) {
         spLoggerPrintError(NUM_OF_IMAGES_ERROR, __FILE__, __func__, __LINE__);
         return 1;
     }
-    numOfFeatures = spConfigGetNumOfFeatures(config, &msg);
-    if (msg != SP_CONFIG_SUCCESS) {
-        spLoggerPrintError(NUM_OF_FEATS_ERROR, __FILE__, __func__, __LINE__);
-        return 1;
-    }
 
-    dim = spConfigGetPCADim(config, msg);
+    dim = spConfigGetPCADim(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         spLoggerPrintError(PCA_DIM_ERROR_MSG, __FILE__, __func__, __LINE__);
         return 1;
@@ -213,7 +193,7 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
         return NULL;
     }
 
-    numOfImages = spConfigGetNumOfImages(config, msg);
+    numOfImages = spConfigGetNumOfImages(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         spLoggerPrintError(NUM_OF_IMAGES_ERROR, __FILE__, __func__, __LINE__);
         return NULL;
@@ -282,6 +262,7 @@ KDTree *extractKDTree(SPConfig config) {
         spLoggerPrintError(EXTRACTION_MODE_ERROR, __FILE__, __func__, __LINE__);
         return 0;
     }
+
     // get features from data
     features = extractFromFile(config, &n);
     if (!features) {
@@ -300,9 +281,8 @@ KDTree *extractKDTree(SPConfig config) {
 int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     int spKNN, numOfImages, numOfSimilarImages, numOfFeatures;
     int *imageRank;
-    SPPoint **features, **queryFeatures;
+    SPPoint **queryFeatures;
     SP_CONFIG_MSG msg;
-    SplitMethod splitMethod;
     SPBPQueue *knnQueue;
     BPQueueElement qElement;
 
@@ -333,9 +313,9 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     for (int i = 0; i < numOfImages; ++i)
         imageRank[i] = 0;
     for (int i = 0; i < numOfFeatures; ++i) {
-        knnQueue = kNearestNeighbors(kdTree, features[i], spKNN);
+        knnQueue = kNearestNeighbors(kdTree, queryFeatures[i], spKNN);
         if (!knnQueue) {
-            for (int i = 0; i < numOfFeatures; ++i)
+            for (int j = 0; j < numOfFeatures; ++i)
                 spPointDestroy(queryFeatures[i]);
             free(imageRank);
             return 0;
