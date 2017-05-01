@@ -20,7 +20,6 @@ int main(int argc, char **argv) {
     KDTree *kdTree;
     SP_LOGGER_LEVEL logger_level;
 
-
     if (argc == 3) {
         if (strcmp(argv[1], "-c") != 0)
             printf("Invalid command line : use -c %s", argv[2]);

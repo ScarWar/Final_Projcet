@@ -14,11 +14,9 @@ LDFLAGS = -Wl,-rpath-link,/usr/local/lib/opencv-3.1.0/lib/
 
 CFLAGS=-std=c99
 
-CPP_COMP_FLAG = -std=c++11 -Wall -Wextra \
--Werror -pedantic-errors -DNDEBUG
+CPP_COMP_FLAG = -std=c++11 # -Wall -Wextra -Werror -pedantic-errors -DNDEBUG
 
-C_COMP_FLAG = -std=c99 -Wall -Wextra \
--Werror -pedantic-errors -DNDEBUG
+C_COMP_FLAG = -std=c99 # -Wall -Wextra -Werror -pedantic-errors -DNDEBUG
 
 #a rule for building a simple c++ source file
 #use g++ -MM SPImageProc.cpp to see dependencies
