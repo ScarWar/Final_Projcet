@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     SP_CONFIG_MSG msg;
     SP_LOGGER_MSG logger_msg;
     SPConfig config;
-    char *queryPath;
+    char *queryPath[MAX_BUFFER_SIZE];
     char loggerFilename[MAX_BUFFER_SIZE];
     KDTree *kdTree;
     SP_LOGGER_LEVEL logger_level;
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     if (argc == 3) {
         if (strcmp(argv[1], "-c") != 0)
             printf("Invalid command line : use -c %s", argv[2]);
-        config = spConfigCreate(argv[2]);
+        config = spConfigCreate(argv[2], &msg);
         if (msg != SP_CONFIG_SUCCESS) {
             printf("The configuration file %s couldn’t be open\n", argv[2]);
             return 1;
@@ -51,10 +51,10 @@ int main(int argc, char **argv) {
     kdTree = extractKDTree(config);
     // Get query from user
     printf("Please enter an image path:\n");
-    sscanf("%s", queryPath);
+    scanf("%s", queryPath);
     while (strcmp(queryPath, "<>") != 0) {
         printf("Please enter an image path:\n");
-        sscanf("%s", queryPath);
+        scanf("%s", queryPath);
         if (!searchSimilarImages(config, queryPath, kdTree)) {
             destroyKDTree(kdTree);
             spConfigDestroy(config);
