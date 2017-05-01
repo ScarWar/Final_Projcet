@@ -118,7 +118,7 @@ SP_LOGGER_MSG spLoggerPrintDebug(const char *msg, const char *file,
 SP_LOGGER_MSG spLoggerPrintMsg(const char *msg) {
     if (logger == NULL) return SP_LOGGER_UNDIFINED;
 
-    int written = fprintf(logger->outputChannel, msg);
+    int written = fprintf(logger->outputChannel, "%s", msg);
     if (written < 0) return SP_LOGGER_WRITE_FAIL;
 
     return SP_LOGGER_SUCCESS;
