@@ -11,10 +11,11 @@ LIBS=-lopencv_xfeatures2d -lopencv_features2d \
 
 
 CPP_COMP_FLAG = -std=c++11 -Wall -Wextra \
--Werror -pedantic-errors -DNDEBUG -g
+-Werror -DNDEBUG -g
 
 C_COMP_FLAG = -std=c99 -Wall -Wextra \
--Werror -pedantic-errors -DNDEBUG -g
+-Werror -DNDEBUG -g
+#-pedantic-errors
 
 $(EXEC): $(OBJS)
 	$(CPP) $(OBJS) -L$(LIBPATH) $(LIBS) -o $@
