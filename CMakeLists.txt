@@ -25,8 +25,9 @@ set(SOURCE_FILES # main.cpp
         SPImageProc.h
         SPImageProc.cpp
         unit_tests/unit_test_util.h
-        # unit_tests/sp_logger_unit_test.c
-        unit_tests/kd_array_unit_test.c
+#        unit_tests/sp_logger_unit_test.c
+#        unit_tests/kd_array_unit_test.c
+        unit_tests/kd_tree_unit_test.c
         SPConfig.c main_aux.cpp main_aux.h)
 
 add_executable(Final_Projcet ${SOURCE_FILES})

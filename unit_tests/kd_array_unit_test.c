@@ -20,9 +20,12 @@ static bool basicKDArrayTest() {
 	SPPoint *points[BASIC_ARRAY_SIZE];
 	for (int i = 0; i < BASIC_ARRAY_SIZE; i++) {
 		points[i] = spPointCreate(data[i], BASIC_ARRAY_DIM, i);
+        ASSERT_TRUE(points[i] != NULL);
 	}
 
 	KDArray *array = init(points, BASIC_ARRAY_SIZE);
+    ASSERT_TRUE(array != NULL);
+    ASSERT_TRUE(getKDArrayDim(array) == BASIC_ARRAY_DIM);
 
     for(int i = 0; i < BASIC_ARRAY_DIM; i++) {
         KDArray **splitArray = Split(array, i);
