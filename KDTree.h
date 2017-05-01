@@ -1,8 +1,10 @@
 #ifndef KDTREE_KDTREE_H
 #define KDTREE_KDTREE_H
 
+#include "SPPoint.h"
 #include "SPBPriorityQueue.h"
 #include "KDArray.h"
+#include "SPLogger.h"
 
 typedef struct kd_tree_t KDTree;
 

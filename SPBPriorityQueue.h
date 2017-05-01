@@ -2,6 +2,7 @@
 #define SPBPRIORITYQUEUE_H_
 
 #include <stdbool.h>
+#include "SPLogger.h"
 
 /**
  * SP Bounded Priority Queue summary

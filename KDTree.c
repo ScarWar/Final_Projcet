@@ -1,9 +1,6 @@
 #include <stdlib.h>
-#include "SPPoint.h"
-#include "KDArray.h"
-#include "KDTree.h"
 #include <time.h>
-#include <stdio.h>
+#include "KDTree.h"
 
 #define INVALID -1 // TODO change if needed
 #define SQ(x) ((x) * (x))
@@ -22,12 +19,14 @@ struct kd_tree_node_t {
 
 KDTree *createKDTree(KDArray *kdArray, SplitMethod splitMethod) {
     if (kdArray == NULL) {
-        return NULL; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
     }
 
     KDTree *kdTree;
     if (!(kdTree = malloc(sizeof(KDTree)))) {
-        return NULL; // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
     }
 
     int splitDim = getSplitDim(kdArray, splitMethod, 0);
@@ -43,11 +42,13 @@ void destroyKDTree(KDTree *kdTree) {
 KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim, SplitMethod splitMethod) {
     int splitDim;
     if (kdArray == NULL) {
-        return NULL; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
     }
     KDTreeNode *kdTreeNode;
     if (!(kdTreeNode = malloc(sizeof(KDTreeNode)))) {
-        return NULL; // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
     }
     // If left with only one point in the kdArray
     // create a leaf node
@@ -86,7 +87,6 @@ KDTreeNode *createKDTreeNode(KDArray *kdArray, int dim, SplitMethod splitMethod)
     kdTreeNode->data = NULL;
 
     if (kdTreeNode->left == NULL || kdTreeNode->right == NULL) {
-        // TODO error message
         destroyKDTreeNode(kdTreeNode->left);
         destroyKDTreeNode(kdTreeNode->right);
         free(kdTreeNode);
@@ -123,7 +123,8 @@ int getSplitDim(KDArray *kdArray, SplitMethod splitMethod, int dim) {
     int splitIndex = -1, matIndexStart, matIndexEnd;
 
     if (kdArray == NULL) {
-        return -1; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return -1;
     }
 
     if (splitMethod == RANDOM) {
@@ -153,56 +154,70 @@ int getSplitDim(KDArray *kdArray, SplitMethod splitMethod, int dim) {
 
 KDTreeNode *getRoot(KDTree *kdTree) {
     if (kdTree == NULL) {
-        return NULL; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
     }
     return kdTree->root;
 }
 
 int getKDTreeNodeDim(KDTreeNode *kdTreeNode) {
     if (kdTreeNode == NULL) {
-        return INVALID; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return INVALID;
     }
     return kdTreeNode->dim;
 }
 
 double getVal(KDTreeNode *kdTreeNode) {
     if (kdTreeNode == NULL) {
-        return INVALID; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return INVALID;
     }
     return kdTreeNode->val;
 }
 
 KDTreeNode *getLeftChild(KDTreeNode *kdTreeNode) {
     if (kdTreeNode == NULL) {
-        return NULL; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
     }
     return kdTreeNode->left;
 }
 
 KDTreeNode *getRightChild(KDTreeNode *kdTreeNode) {
     if (kdTreeNode == NULL) {
-        return NULL; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
     }
     return kdTreeNode->right;
 }
 
 SPPoint *getData(KDTreeNode *kdTreeNode) {
     if (kdTreeNode == NULL) {
-        return NULL; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
     }
     return kdTreeNode->data;
 }
 
 int isLeaf(KDTreeNode *kdTreeNode) {
-    if (kdTreeNode == NULL)
-        return 0; // TODO error message
+    if (kdTreeNode == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return 0;
+    }
     return (kdTreeNode->left == NULL) && (kdTreeNode->right == NULL);
 }
 
 SPBPQueue *kNearestNeighbors(KDTree *kdTree, SPPoint *point, int spKNN) {
-    if (kdTree == NULL || point == NULL)
+    if (kdTree == NULL || point == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
         return NULL;
-    SPBPQueue *queue = spBPQueueCreate(spKNN); // TODO Change
+    } else if (spKNN < 0) {
+        spLoggerPrintError(ERR_MSG_INVALID_ARG, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
+    SPBPQueue *queue = spBPQueueCreate(spKNN);
+    if (!queue) return NULL;
     kNearestNeighborsRecursive(kdTree->root, queue, point);
     return queue;
 }
@@ -210,7 +225,8 @@ SPBPQueue *kNearestNeighbors(KDTree *kdTree, SPPoint *point, int spKNN) {
 void kNearestNeighborsRecursive(KDTreeNode *kdTreeNode, SPBPQueue *queue, SPPoint *point) {
     double t = 0;
     if (kdTreeNode == NULL) {
-        return; // TODO error message
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return;
     }
 
     // If the is a leaf enqueue it
@@ -219,7 +235,6 @@ void kNearestNeighborsRecursive(KDTreeNode *kdTreeNode, SPBPQueue *queue, SPPoin
                          spPointL2SquaredDistance(kdTreeNode->data, point));
         return;
     }
-
 
     // Check if the query point is at left or right hyperplane and search recursively
     bool isLeftTraversed = true; // A flag to check what hyperplane was traversed

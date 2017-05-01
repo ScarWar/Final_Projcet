@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "SPPoint.h"
+#include "SPLogger.h"
 
 
 struct sp_point_t {
@@ -12,9 +13,15 @@ struct sp_point_t {
 
 SPPoint *spPointCreate(double *data, int dim, int index) {
     SPPoint *point = malloc(sizeof(SPPoint));
-    if (point == NULL) return NULL;
+    if (point == NULL) {
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
     point->data = malloc(dim * sizeof(double));
-    if (point->data == NULL) return NULL;
+    if (point->data == NULL) {
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
     for (int i = 0; i < dim; i++) {
         point->data[i] = data[i];
     }

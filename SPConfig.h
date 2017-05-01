@@ -52,7 +52,7 @@ typedef struct sp_config_t *SPConfig;
  */
 SPConfig spConfigCreate(const char *filename, SP_CONFIG_MSG *msg);
 
-/*
+/**
  * Returns true if spExtractionMode = true, false otherwise.
  *
  * @param config - the configuration structure
@@ -65,7 +65,7 @@ SPConfig spConfigCreate(const char *filename, SP_CONFIG_MSG *msg);
  */
 bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG *msg);
 
-/*
+/**
  * Returns true if spMinimalGUI = true, false otherwise.
  *
  * @param config - the configuration structure
@@ -78,7 +78,7 @@ bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG *msg);
  */
 bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG *msg);
 
-/*
+/**
  * Returns the number of images set in the configuration file, i.e the value
  * of spNumOfImages.
  *
@@ -92,7 +92,7 @@ bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG *msg);
  */
 int spConfigGetNumOfImages(const SPConfig config, SP_CONFIG_MSG *msg);
 
-/*
+/**
  * Returns the number of features to be extracted. i.e the value
  * of spNumOfFeatures.
  *
@@ -166,8 +166,14 @@ SP_CONFIG_MSG spConfigGetImagePath(char *imagePath, const SPConfig config,
 SP_CONFIG_MSG spConfigGetPCAPath(char *pcaPath, const SPConfig config);
 
 SplitMethod spConfigGetKDTreeSplitMethod(const SPConfig config);
+
 int spConfigGetKNN(const SPConfig config);
+
 int spConfigGetNumOfSimilarImages(const SPConfig config);
+
+SP_LOGGER_LEVEL spConfigGetLoggerLevel(const SPConfig config);
+
+
 
 /**
  * Frees all memory resources associate with config. 

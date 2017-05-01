@@ -1,7 +1,3 @@
-//
-// Created by Matan Sokolovsky on 4/11/17.
-//
-
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
@@ -163,7 +159,6 @@ SP_CONFIG_LINE_MSG spSetVariable(const char *name, const char *value, SPConfig c
     }
 
     if (!strcmp(name, "spPCADimension")) {
-
         int dim = atoi(value);
         if (dim < 10 || dim > 28) {
             return CONFIG_LINE_INVALID;
@@ -494,3 +489,10 @@ int spConfigGetNumOfSimilarImages(const SPConfig config) {
     return config->spNumOfSimilarImages;
 }
 
+void spConfigGetLoggerFilename(const SPConfig config, char *loggerFilename) {
+    strcpy(config->spLoggerFilename, loggerFilename);
+}
+
+SP_LOGGER_LEVEL spConfigGetLoggerLevel(const SPConfig config) {
+    return config->spLoggerLevel;
+}

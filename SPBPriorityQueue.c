@@ -9,10 +9,20 @@ struct sp_bp_queue_t {
 };
 
 SPBPQueue *spBPQueueCreate(int maxSize) {
+    if (maxSize <= 1) {
+        spLoggerPrintError(ERR_MSG_INVALID_ARG, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
     SPBPQueue *queue = malloc(sizeof(SPBPQueue));
-    if (queue == NULL) return NULL;
+    if (queue == NULL) {
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
     queue->data = malloc(maxSize * sizeof(BPQueueElement));
-    if (queue->data == NULL) return NULL;
+    if (queue->data == NULL) {
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
     queue->maxSize = maxSize;
     queue->currSize = 0;
     return queue;

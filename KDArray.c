@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "KDArray.h"
+#include "SPLogger.h"
 
 
 struct kd_array_t {
@@ -15,11 +16,16 @@ struct tuple_t {
 };
 
 KDArray *init(SPPoint **arr, size_t size) {
-    if (arr == NULL) return NULL; // TODO error message
+    if (arr == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
 
     KDArray *kdArray;
-    if (!(kdArray = malloc(sizeof(KDArray))))
-        return NULL; // TODO error message
+    if (!(kdArray = malloc(sizeof(KDArray)))) {
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
 
     kdArray->dim = spPointGetDimension(arr[0]);
     kdArray->size = size;
@@ -28,7 +34,8 @@ KDArray *init(SPPoint **arr, size_t size) {
 
     if (kdArray->mat == NULL) {
         free(kdArray);
-        return NULL; // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
     }
 
     for (int k = 0; k < kdArray->dim; ++k) {
@@ -38,7 +45,8 @@ KDArray *init(SPPoint **arr, size_t size) {
             }
             free(kdArray->mat);
             free(kdArray);
-            return NULL; // TODO error message
+            spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+            return NULL;
         }
     }
     if (!(kdArray->arr = malloc(kdArray->size * sizeof(SPPoint *)))) {
@@ -47,18 +55,44 @@ KDArray *init(SPPoint **arr, size_t size) {
         }
         free(kdArray->mat);
         free(kdArray);
-        return NULL; // TODO error message;
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
     }
 
     // Inserting data
     // Copying points
     for (int l = 0; l < kdArray->size; ++l) {
         kdArray->arr[l] = spPointCopy(arr[l]);
+        if (!kdArray->arr[l]) {
+            for (int i = 0; i < kdArray->dim; ++i) {
+                free(kdArray->mat[i]);
+            }
+            free(kdArray->mat);
+            free(kdArray);
+            for (int j = 0; j < l; ++j) {
+                spPointDestroy(kdArray->arr[j]);
+            }
+            free(kdArray->arr);
+            spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+            return NULL;
+        }
     }
-
 
     // Filling the matrix with sorted indexes
     Tuple *tmp = malloc(size * sizeof(Tuple));
+    if (!tmp) {
+        for (int i = 0; i < kdArray->dim; ++i) {
+            free(kdArray->mat[i]);
+        }
+        free(kdArray->mat);
+        free(kdArray);
+        for (int j = 0; j < kdArray->size; ++j) {
+            spPointDestroy(kdArray->arr[j]);
+        }
+        free(kdArray->arr);
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
     // insert indexes to mat (using SPPoint element index)
     for (int i = 0; i < kdArray->dim; ++i) {
         sortByCoor(tmp, arr, size, i);
@@ -71,7 +105,7 @@ KDArray *init(SPPoint **arr, size_t size) {
     return kdArray;
 }
 
-int destroyKDArray(KDArray *kdArray) { // TODO add end cases
+int destroyKDArray(KDArray *kdArray) {
     if (kdArray == NULL) return 0;
 
     // Free point array, including each point
@@ -96,26 +130,29 @@ KDArray **Split(KDArray *kdArray, int coor) {
     int freeRightMat = -1, freeRightArr = 0;
 
 
-    if (kdArray == NULL || !(0 <= coor && coor <= kdArray->dim - 1)) {
-        // TODO error message
+    if (kdArray == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
+    } else if (!(0 <= coor && coor <= kdArray->dim - 1)) {
+        spLoggerPrintError(ERR_MSG_INVALID_ARG, __FILE__, __func__, __LINE__);
         return NULL;
     }
 
     size_t mid = kdArray->size / 2 + kdArray->size % 2;
 
     if (!(kdLeft = malloc(sizeof(KDArray)))) {
-        // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         goto freeMemSplit;
     }
 
     if (!(kdRight = malloc(sizeof(KDArray)))) {
-        // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         goto freeMemSplit;
     }
 
     // Create a characteristic vector of the left half plane
     if (!(x = malloc(kdArray->size * sizeof(int)))) {
-        // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         goto freeMemSplit;
     }
 
@@ -125,11 +162,10 @@ KDArray **Split(KDArray *kdArray, int coor) {
 
     // Create a map for indexes of each half plane
     if (!(map1 = malloc(kdArray->size * sizeof(int)))) {
-        // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         goto freeMemSplit;
-    }
-    if (!(map2 = malloc(kdArray->size * sizeof(int)))) {
-        // TODO error message
+    } else if (!(map2 = malloc(kdArray->size * sizeof(int)))) {
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         goto freeMemSplit;
     }
 
@@ -162,12 +198,12 @@ KDArray **Split(KDArray *kdArray, int coor) {
     kdRight->size = kdArray->size - mid;
 
     if (!(kdLeft->mat = malloc(kdLeft->dim * sizeof(*kdLeft->mat)))) {
-        // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         goto freeMemSplit;
     }
     for (int k = 0; k < kdArray->dim; ++k) {
         if (!(kdLeft->mat[k] = malloc(kdLeft->size * sizeof(kdLeft->mat)))) {
-            // TODO error message
+            spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
             freeLeftMat = k;
             goto freeMemSplit;
         }
@@ -175,12 +211,12 @@ KDArray **Split(KDArray *kdArray, int coor) {
     freeLeftMat = kdArray->dim;
 
     if (!(kdRight->mat = malloc(kdRight->dim * sizeof(*kdRight->mat)))) {
-        // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         goto freeMemSplit;
     }
     for (int k = 0; k < kdArray->dim; ++k) {
         if (!(kdRight->mat[k] = malloc(kdRight->size * sizeof(kdRight->mat)))) {
-            // TODO error message
+            spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
             freeRightMat = k;
             goto freeMemSplit;
         }
@@ -188,16 +224,14 @@ KDArray **Split(KDArray *kdArray, int coor) {
     freeRightMat = kdArray->dim;
 
     if (!(kdLeft->arr = malloc(kdLeft->size * sizeof(SPPoint *)))) {
-        // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         goto freeMemSplit;
     }
     freeLeftArr = 1;
 
     if (!(kdRight->arr = malloc((kdRight->size * sizeof(SPPoint *))))) {
-        // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         goto freeMemSplit;
-
-        return NULL; // TODO error message
     }
     freeRightArr = 1;
 
@@ -217,7 +251,8 @@ KDArray **Split(KDArray *kdArray, int coor) {
 
     KDArray **pArray;
     if (!(pArray = malloc(2 * sizeof(KDArray *)))) {
-        goto freeMemSplit; // TODO error message
+        spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
+        goto freeMemSplit;
     }
 
     for (size_t i = 0; i < kdArray->size; ++i) {
@@ -261,8 +296,11 @@ KDArray **Split(KDArray *kdArray, int coor) {
 }
 
 void sortByCoor(Tuple *trgt, SPPoint **arr, size_t size, int i) {
-    if (arr == NULL || size == 0 || !(0 <= i && i <= spPointGetDimension(*arr))) {
-        // TODO error message
+    if (arr == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return;
+    } else if (size == 0 || !(0 <= i && i <= spPointGetDimension(*arr))) {
+        spLoggerPrintError(ERR_MSG_INVALID_ARG, __FILE__, __func__, __LINE__);
         return;
     }
     for (int j = 0; j < size; ++j) {
@@ -279,28 +317,42 @@ int cmpFunc(const void *a, const void *b) {
 }
 
 int getKDArrayDim(KDArray *kdArray) {
-    if (kdArray == NULL) return -1; // TODO error message
+    if (kdArray == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return -1;
+    }
     return kdArray->dim;
 }
 
 size_t getSize(KDArray *kdArray) {
-    if (kdArray == NULL) return 0; // TODO error message
+    if (kdArray == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return 0;
+    }
     return kdArray->size;
 }
 
 int **getMatrix(KDArray *kdArray) {
-    if (kdArray == NULL) return NULL; // TODO error message
+    if (kdArray == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
     return kdArray->mat;
 }
 
-SPPoint **getArr(KDArray *kdArray) { // TODO error message
-    if (kdArray == NULL) return NULL;
+SPPoint **getArr(KDArray *kdArray) {
+    if (kdArray == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return NULL;
+    }
     return kdArray->arr;
 }
 
 double getMedian(KDArray *kdArray, int i) {
-    if (kdArray == NULL)
-        return -1; // TODO error message
+    if (kdArray == NULL) {
+        spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
+        return -1;
+    }
     size_t mid = kdArray->size / 2 + kdArray->size % 2;
     return spPointGetAxisCoor(kdArray->arr[kdArray->mat[i][mid - 1]], i);
 }

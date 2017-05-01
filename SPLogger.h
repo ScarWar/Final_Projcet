@@ -24,6 +24,11 @@
  * spLoggerPrintMsg     - Prints the exact message at any level (Without formatting)
  */
 
+#define ERR_MSG_NULL_POINTER "Null pointer argument"
+#define ERR_MSG_ALLOC_FAIL "Memory allocation failed"
+#define ERR_MSG_INVALID_ARG "Invalid argument"
+
+
 /** A type used to decide the level of the logger**/
 typedef enum sp_logger_level_t {
 	SP_LOGGER_ERROR_LEVEL = 1, //Error level
@@ -133,7 +138,7 @@ SP_LOGGER_MSG spLoggerPrintError(const char* msg, const char* file,
  *
  * @param msg     	- The message to printed
  * @param file    	- A string representing the filename in which spLoggerPrintWarning call occurred
- * @param function 	- A string representing the function name in which spLoggerPrintWarning call ocurred
+ * @param function 	- A string representing the function name in which spLoggerPrintWarning call occurred
  * @param line		- A string representing the line in which the spLoggerPrintWarning call occurred
  * @return
  * SP_LOGGER_UNDIFINED 			- If the logger is undefined
@@ -190,7 +195,7 @@ SP_LOGGER_MSG spLoggerPrintInfo(const char* msg);
  *
  * @param msg     	- The message to printed
  * @param file    	- A string representing the filename in which spLoggerPrintWarning call occurred
- * @param function 	- A string representing the function name in which spLoggerPrintWarning call ocurred
+ * @param function 	- A string representing the function name in which spLoggerPrintWarning call occurred
  * @param line		- A string representing the line in which the function call occurred
  * @return
  * SP_LOGGER_UNDIFINED 			- If the logger is undefined

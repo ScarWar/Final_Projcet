@@ -23,6 +23,9 @@ extern "C" {
 #include "KDTree.h"
 }
 
+#define MAX_BUFFER_SIZE 1024
+
+
 /**
  * Create a file where features are stored for future use
  * @param path          - a path to where file is created

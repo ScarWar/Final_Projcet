@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.6)
 project(Final_Projcet)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
 find_package(OpenCV REQUIRED)
 
 set(CMAKE_C_STANDARD 99)
-
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c99")
 
 message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
@@ -25,9 +25,9 @@ set(SOURCE_FILES # main.cpp
         SPImageProc.h
         SPImageProc.cpp
         unit_tests/unit_test_util.h
-#        unit_tests/sp_logger_unit_test.c
-#        unit_tests/kd_array_unit_test.c
-#        unit_tests/kd_tree_unit_test.c
+        unit_tests/sp_logger_unit_test.c
+        unit_tests/kd_array_unit_test.c
+        unit_tests/kd_tree_unit_test.c
         unit_tests/sp_config_unit_test.c
         SPConfig.c main_aux.cpp main_aux.h)
 
