@@ -16,8 +16,7 @@ int main(int argc, char **argv) {
     SP_CONFIG_MSG msg;
     SP_LOGGER_MSG logger_msg;
     SPConfig config;
-    char *queryPath[MAX_BUFFER_SIZE];
-    char loggerFilename[MAX_BUFFER_SIZE];
+    char queryPath[MAX_BUFFER_SIZE], loggerFilename[MAX_BUFFER_SIZE];
     KDTree *kdTree;
     SP_LOGGER_LEVEL logger_level;
 
