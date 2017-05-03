@@ -137,7 +137,7 @@ int getSplitDim(KDArray *kdArray, SplitMethod splitMethod, int dim) {
     } else if (splitMethod == MAX_SPREAD) {
         // Find the dimension of max spread
         for (int i = 0; i < dim; ++i) {
-            for (int j = 0; j < getSize(kdArray); ++j) {
+            for (unsigned int j = 0; j < getSize(kdArray); ++j) {
                 matIndexStart = getMatrix(kdArray)[i][0];
                 matIndexEnd = getMatrix(kdArray)[i][getSize(kdArray) - 1];
                 currSpread = spPointGetAxisCoor(getArr(kdArray)[matIndexEnd], i) -

@@ -49,11 +49,36 @@ void setDefaults(SPConfig config) {
     config->spKNN = 1;
     config->spLoggerLevel = SP_LOGGER_INFO_WARNING_ERROR_LEVEL;
     config->spImagesDirectory = malloc(BUFFER_LEN);
+    if (!config->spImagesDirectory) {
+        // TODO error
+        printf("spImagesDirectory\n");
+        return;
+    }
     config->spImagesPrefix = malloc(BUFFER_LEN);
+    if (!config->spImagesPrefix) {
+        // TODO error
+        printf("spImagesPrefix\n");
+        return;
+    }    
     config->spImagesSuffix = malloc(BUFFER_LEN);
+    if (!config->spImagesSuffix) {
+        // TODO error
+        printf("spImagesSuffix\n");
+        return;
+    }    
     config->spPcaFilename = malloc(BUFFER_LEN);
+    if (!config->spPcaFilename) {
+        // TODO error
+        printf("spPcaFilename\n");
+        return;
+    }
     config->spLoggerFilename = malloc(BUFFER_LEN);
-
+    if (!config->spLoggerFilename) {
+        // TODO error
+        printf("spLoggerFilename\n");
+        return;
+    }
+    
     *config->spImagesDirectory = '\0';
     *config->spImagesPrefix = '\0';
     *config->spImagesSuffix = '\0';
@@ -241,7 +266,7 @@ SPConfig spConfigCreate(const char *filename, SP_CONFIG_MSG *msg) {
         return NULL;
     }
 
-    SPConfig config = malloc(sizeof(SPConfig));
+    SPConfig config = malloc(sizeof(struct sp_config_t));
     if (config == NULL) {
         *msg = SP_CONFIG_ALLOC_FAIL;
         return NULL;
@@ -315,7 +340,7 @@ bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG *msg) {
     return config->spExtractionMode;
 }
 
-/**
+/** 
  * Returns true if spMinimalGUI = true, false otherwise.
  *
  * @param config - the configuration structure
@@ -489,10 +514,23 @@ int spConfigGetNumOfSimilarImages(const SPConfig config) {
 }
 
 void spConfigGetLoggerFilename(const SPConfig config, char *loggerFilename) {
-    strcpy(config->spLoggerFilename, loggerFilename);
+    strcpy(loggerFilename, config->spLoggerFilename);
 }
 
 SP_LOGGER_LEVEL spConfigGetLoggerLevel(const SPConfig config) {
     return config->spLoggerLevel;
 }
 
+SP_CONFIG_MSG spConfigGetImageRelativePath(char *imagePath, const SPConfig config,
+                                           int index) {
+    if (imagePath == NULL || config == NULL) {
+        return SP_CONFIG_INVALID_ARGUMENT;
+    }
+
+    if (index >= config->spNumOfImages) {
+        return SP_CONFIG_INDEX_OUT_OF_RANGE;
+    }
+
+    sprintf(imagePath, "%s%s%d", config->spImagesDirectory, config->spImagesPrefix, index);
+    return SP_CONFIG_SUCCESS;
+}

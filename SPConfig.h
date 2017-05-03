@@ -177,7 +177,7 @@ void spConfigGetLoggerFilename(const SPConfig config, char *loggerFilename);
 
 SP_LOGGER_LEVEL spConfigGetLoggerLevel(const SPConfig config);
 
-
+SP_CONFIG_MSG spConfigGetImageRelativePath(char *imagePath, const SPConfig config, int index);
 /**
  * Frees all memory resources associate with config. 
  * If config == NULL nothig is done.

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "string.h"
 
 //File open mode
 #define SP_LOGGER_OPEN_MODE "w"
@@ -21,10 +22,12 @@ struct sp_logger_t {
 
 SP_LOGGER_MSG spLoggerCreate(const char *filename, SP_LOGGER_LEVEL level) {
     if (logger != NULL) { //Already defined
+        printf("SP_LOGGER_DEFINED\n");
         return SP_LOGGER_DEFINED;
     }
-    logger = (SPLogger) malloc(sizeof(*logger));
+    logger = (SPLogger) malloc(sizeof(struct sp_logger_t));
     if (logger == NULL) { //Allocation failure
+        printf("SP_LOGGER_DEFINED\n");
         return SP_LOGGER_OUT_OF_MEMORY;
     }
     logger->level = level; //Set the level of the logger

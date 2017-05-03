@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <opencv2/core/mat.hpp>
-#include "SPImageProc.h"
+//#include "SPImageProc.h"
 
 #include "main_aux.h"
 
@@ -94,6 +94,7 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
         spLoggerPrintError(ERR_MSG_READ_FILE, __FILE__, __func__, __LINE__);
         return NULL;
     }
+    printf("%d\n", numOfFeatures);
     features = (SPPoint **) malloc(numOfFeatures * sizeof(SPPoint *));
     if (features == NULL) {
         fclose(file);
@@ -119,7 +120,6 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
                 spLoggerPrintError(ERR_MSG_READ_FILE, __FILE__, __func__, __LINE__);
                 return NULL;
             }
-            data[j] = val;
         }
         features[i] = spPointCreate(data, dim, index);
         if (!features[i]) {
@@ -132,6 +132,7 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
             return NULL;
         }
     }
+    printf("----- %d -----\n", numOfFeatures);
     free(data);
     *nFeatures = numOfFeatures;
     fclose(file);
@@ -148,13 +149,13 @@ int extractFromImages(SPConfig config) {
     numOfImages = spConfigGetNumOfImages(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         spLoggerPrintError(NUM_OF_IMAGES_ERROR, __FILE__, __func__, __LINE__);
-        return 1;
+        return 0;
     }
 
     dim = spConfigGetPCADim(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         spLoggerPrintError(PCA_DIM_ERROR_MSG, __FILE__, __func__, __LINE__);
-        return 1;
+        return 0;
     }
 
     for (int i = 0; i < numOfImages; ++i) {
@@ -162,9 +163,15 @@ int extractFromImages(SPConfig config) {
             spLoggerPrintError(IMAGE_PATH_ERROR, __FILE__, __func__, __LINE__);
             break;
         }
+
         imageFeatures = imageProc.getImageFeatures(path, i, &nFeatures);
         if (imageFeatures == NULL) {
             spLoggerPrintError(IMAGE_FEATURES_ERR, __FILE__, __func__, __LINE__);
+            break;
+        }
+
+        if (spConfigGetImageRelativePath(path, config, i) != SP_CONFIG_SUCCESS) {
+            spLoggerPrintError(IMAGE_PATH_ERROR, __FILE__, __func__, __LINE__);
             break;
         }
         if (sprintf(path, "%s%s", path, FEATURE_FILE_TYPE) < 0) {
@@ -172,13 +179,14 @@ int extractFromImages(SPConfig config) {
             spLoggerPrintError(ERR_MSG_PATH_CREATION, __FILE__, __func__, __LINE__);
             break;
         }
+        printf("%s\n", path);
         if (!createFeaturesFile(path, imageFeatures, dim, i, nFeatures)) {
             free(imageFeatures);
             break;
         }
         free(imageFeatures);
     }
-    return 0;
+    return 1;
 }
 
 SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
@@ -186,13 +194,12 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
     int *numOfFeatures;
     char path[MAX_BUFFER_SIZE];
     SP_CONFIG_MSG msg;
-    SPPoint ***tmpFeatures, **tmpImageFeatures, **features = NULL;
+    SPPoint ***tmpFeatures = NULL, **tmpImageFeatures = NULL, **features = NULL;
 
     if (!totalNumOfFeatures) {
         spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
         return NULL;
     }
-
     numOfImages = spConfigGetNumOfImages(config, &msg);
     if (msg != SP_CONFIG_SUCCESS) {
         spLoggerPrintError(NUM_OF_IMAGES_ERROR, __FILE__, __func__, __LINE__);
@@ -205,7 +212,7 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
         return NULL;
     }
 
-    tmpFeatures = (SPPoint ***) malloc(sizeof(SPPoint **));
+    tmpFeatures = (SPPoint ***) malloc(numOfImages * sizeof(SPPoint **));
     if (!tmpFeatures) {
         free(numOfFeatures);
         spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
@@ -224,9 +231,10 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
             free(tmpFeatures);
             return NULL;
         }
-        totalNumOfFeatures += nFeatures;
+        printf("----- %d -----\n", nFeatures);
+        *totalNumOfFeatures += nFeatures;
         numOfFeatures[i] = nFeatures;
-        tmpFeatures[j++] = tmpImageFeatures;
+        tmpFeatures[i] = tmpImageFeatures;
         free(tmpImageFeatures);
     }
     features = (SPPoint **) malloc(*totalNumOfFeatures * sizeof(SPPoint *));
@@ -236,7 +244,6 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
         spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         return NULL;
     }
-    j = 0;
     for (int i = 0; i < numOfImages; ++i) {
         for (int k = 0; k < numOfFeatures[i]; ++k) {
             features[j++] = tmpFeatures[i][k];
@@ -254,15 +261,15 @@ KDTree *extractKDTree(SPConfig config) {
     SPPoint **features;
 
     splitMethod = spConfigGetKDTreeSplitMethod(config);
-
     // If in extraction mode than extract features from images
     if (spConfigIsExtractionMode(config, &msg)) {
-        extractFromImages(config);
+        if (!extractFromImages(config)) {
+            return 0;
+        }
     } else if (msg != SP_CONFIG_SUCCESS) {
         spLoggerPrintError(EXTRACTION_MODE_ERROR, __FILE__, __func__, __LINE__);
         return 0;
     }
-
     // get features from data
     features = extractFromFile(config, &n);
     if (!features) {
@@ -275,6 +282,7 @@ KDTree *extractKDTree(SPConfig config) {
     KDTree *kdTree = createKDTree(kdArray, splitMethod);
     destroyKDArray(kdArray);
     if (!kdTree) return 0;
+    printf("Finished KDTree \n");
     return kdTree;
 }
 
@@ -309,6 +317,7 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
         spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
         return 0;
     }
+
 
     for (int i = 0; i < numOfImages; ++i)
         imageRank[i] = 0;
@@ -387,7 +396,9 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
             return 0;
         }
         if (minimalGUI) {
-            scanf("Press any key to show next image\n");
+            char s[MAX_BUFFER_SIZE];
+            printf("Press any key to show next image\n");
+            scanf("%s", s);
             imageProc.showImage(path);
         } else
             printf("%s\n", path);

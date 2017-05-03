@@ -12,8 +12,6 @@
 #include "opencv2/xfeatures2d.hpp"
 #include "SPImageProc.h"
 
-#include "main_aux.h"
-
 extern "C" {
 #include "SPLogger.h"
 #include "SPConfig.h"

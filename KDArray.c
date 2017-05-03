@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "KDArray.h"
 #include "SPLogger.h"
 
@@ -20,7 +21,6 @@ KDArray *init(SPPoint **arr, size_t size) {
         spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
         return NULL;
     }
-
     KDArray *kdArray;
     if (!(kdArray = malloc(sizeof(KDArray)))) {
         spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
@@ -31,7 +31,6 @@ KDArray *init(SPPoint **arr, size_t size) {
     kdArray->size = size;
 
     kdArray->mat = malloc(kdArray->dim * sizeof(*kdArray->mat));
-
     if (kdArray->mat == NULL) {
         free(kdArray);
         spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
@@ -61,7 +60,8 @@ KDArray *init(SPPoint **arr, size_t size) {
 
     // Inserting data
     // Copying points
-    for (int l = 0; l < kdArray->size; ++l) {
+    printf("---------- %zu ----------\n", kdArray->size);
+    for (unsigned int l = 0; l < kdArray->size; ++l) {
         kdArray->arr[l] = spPointCopy(arr[l]);
         if (!kdArray->arr[l]) {
             for (int i = 0; i < kdArray->dim; ++i) {
@@ -69,7 +69,7 @@ KDArray *init(SPPoint **arr, size_t size) {
             }
             free(kdArray->mat);
             free(kdArray);
-            for (int j = 0; j < l; ++j) {
+            for (unsigned int j = 0; j < l; ++j) {
                 spPointDestroy(kdArray->arr[j]);
             }
             free(kdArray->arr);
@@ -77,16 +77,17 @@ KDArray *init(SPPoint **arr, size_t size) {
             return NULL;
         }
     }
+    printf("---------- %zu ----------\n", kdArray->size);
 
     // Filling the matrix with sorted indexes
     Tuple *tmp = malloc(size * sizeof(Tuple));
-    if (!tmp) {
+    if (tmp == NULL) {
         for (int i = 0; i < kdArray->dim; ++i) {
             free(kdArray->mat[i]);
         }
         free(kdArray->mat);
         free(kdArray);
-        for (int j = 0; j < kdArray->size; ++j) {
+        for (unsigned int j = 0; j < kdArray->size; ++j) {
             spPointDestroy(kdArray->arr[j]);
         }
         free(kdArray->arr);
@@ -96,7 +97,7 @@ KDArray *init(SPPoint **arr, size_t size) {
     // insert indexes to mat (using SPPoint element index)
     for (int i = 0; i < kdArray->dim; ++i) {
         sortByCoor(tmp, arr, size, i);
-        for (int j = 0; j < kdArray->size; ++j) {
+        for (unsigned int j = 0; j < kdArray->size; ++j) {
             kdArray->mat[i][j] = tmp[j].index;
         }
     }
@@ -109,7 +110,7 @@ int destroyKDArray(KDArray *kdArray) {
     if (kdArray == NULL) return 0;
 
     // Free point array, including each point
-    for (int i = 0; i < kdArray->size; ++i) {
+    for (unsigned int i = 0; i < kdArray->size; ++i) {
         spPointDestroy(kdArray->arr[i]);
     }
     free(kdArray->arr);
@@ -156,7 +157,7 @@ KDArray **Split(KDArray *kdArray, int coor) {
         goto freeMemSplit;
     }
 
-    for (int j = 0; j < kdArray->size; ++j) {
+    for (unsigned int j = 0; j < kdArray->size; ++j) {
         x[j] = 1;
     }
 
@@ -170,7 +171,7 @@ KDArray **Split(KDArray *kdArray, int coor) {
     }
 
     // Fill the characteristic vector
-    for (int j = 0; j < mid; ++j) {
+    for (unsigned int j = 0; j < mid; ++j) {
         x[kdArray->mat[coor][j]] = 0;
     }
 
@@ -180,7 +181,7 @@ KDArray **Split(KDArray *kdArray, int coor) {
     // map1[k] = j if P[k] = P1[j], -1 otherwise
     // map2[k] = j if P[k] = P2[j], -1 otherwise
     int index1 = 0, index2 = 0;
-    for (int k = 0; k < kdArray->size; ++k) {
+    for (unsigned int k = 0; k < kdArray->size; ++k) {
         if (x[k] == 0) {
             map1[k] = index1++;
             map2[k] = -1;
@@ -238,7 +239,7 @@ KDArray **Split(KDArray *kdArray, int coor) {
     // Fill the left and the right KDArray
     for (int i = 0; i < kdArray->dim; ++i) {
         index1 = 0, index2 = 0;
-        for (int j = 0; j < kdArray->size; ++j) {
+        for (unsigned int j = 0; j < kdArray->size; ++j) {
             // Put int deceleration outside
             int index = kdArray->mat[i][j];
             if (x[index] == 0) {
@@ -303,7 +304,7 @@ void sortByCoor(Tuple *trgt, SPPoint **arr, size_t size, int i) {
         spLoggerPrintError(ERR_MSG_INVALID_ARG, __FILE__, __func__, __LINE__);
         return;
     }
-    for (int j = 0; j < size; ++j) {
+    for (unsigned int j = 0; j < size; ++j) {
         trgt[j].val = spPointGetAxisCoor(arr[j], i);
         trgt[j].index = j;
     }
