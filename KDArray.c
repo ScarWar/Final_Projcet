@@ -60,7 +60,6 @@ KDArray *init(SPPoint **arr, size_t size) {
 
     // Inserting data
     // Copying points
-    printf("---------- %zu ----------\n", kdArray->size);
     for (unsigned int l = 0; l < kdArray->size; ++l) {
         kdArray->arr[l] = spPointCopy(arr[l]);
         if (!kdArray->arr[l]) {
@@ -77,7 +76,6 @@ KDArray *init(SPPoint **arr, size_t size) {
             return NULL;
         }
     }
-    printf("---------- %zu ----------\n", kdArray->size);
 
     // Filling the matrix with sorted indexes
     Tuple *tmp = malloc(size * sizeof(Tuple));
@@ -102,7 +100,6 @@ KDArray *init(SPPoint **arr, size_t size) {
         }
     }
     free(tmp);
-
     return kdArray;
 }
 
@@ -139,7 +136,7 @@ KDArray **Split(KDArray *kdArray, int coor) {
         return NULL;
     }
 
-    size_t mid = kdArray->size / 2 + kdArray->size % 2;
+    size_t mid = (kdArray->size & 1) + (kdArray->size >> 1);
 
     if (!(kdLeft = malloc(sizeof(KDArray)))) {
         spLoggerPrintError(ERR_MSG_ALLOC_FAIL, __FILE__, __func__, __LINE__);
@@ -263,10 +260,8 @@ KDArray **Split(KDArray *kdArray, int coor) {
             kdRight->arr[map2[i]] = spPointCopy(kdArray->arr[i]);
     }
 
-
     pArray[0] = kdLeft;
     pArray[1] = kdRight;
-
 
     free(x);
     free(map1);
@@ -354,7 +349,8 @@ double getMedian(KDArray *kdArray, int i) {
         spLoggerPrintError(ERR_MSG_NULL_POINTER, __FILE__, __func__, __LINE__);
         return -1;
     }
-    size_t mid = kdArray->size / 2 + kdArray->size % 2;
+    size_t mid;
+    mid = (kdArray->size & 1) + (kdArray->size >> 1);
     return spPointGetAxisCoor(kdArray->arr[kdArray->mat[i][mid - 1]], i);
 }
 

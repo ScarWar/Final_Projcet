@@ -4,11 +4,11 @@ project(Final_Projcet)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
 find_package(OpenCV REQUIRED)
 
-set(CMAKE_C_STANDARD 99)
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c99")
+#set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c99")
 
-message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
-message(STATUS "OpenCV_LIBS=${OpenCV_LIBS}")
+#message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
+#message(STATUS "OpenCV_LIBS=${OpenCV_LIBS}")
 
 set(SOURCE_FILES
         main.cpp
@@ -24,8 +24,8 @@ set(SOURCE_FILES
         SPConfig.c
         SPLogger.c
         SPLogger.h
-        #        SPImageProc.h
-        #        SPImageProc.cpp
+        SPImageProc.h
+        SPImageProc.cpp
         #        unit_tests/unit_test_util.h
         #        unit_tests/sp_logger_unit_test.c
         #        unit_tests/kd_array_unit_test.c

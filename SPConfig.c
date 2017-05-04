@@ -220,23 +220,23 @@ SP_CONFIG_LINE_MSG spSetVariable(const char *name, const char *value, SPConfig c
     }
 
     if (!strcmp(name, "spImagesDirectory")) {
-        strcat(config->spImagesDirectory, value);
+        strcpy(config->spImagesDirectory, value);
         return CONFIG_LINE_SUCCESS;
     }
     if (!strcmp(name, "spImagesPrefix")) {
-        strcat(config->spImagesPrefix, value);
+        strcpy(config->spImagesPrefix, value);
         return CONFIG_LINE_SUCCESS;
     }
     if (!strcmp(name, "spImagesSuffix")) {
-        strcat(config->spImagesSuffix, value);
+        strcpy(config->spImagesSuffix, value);
         return CONFIG_LINE_SUCCESS;
     }
     if (!strcmp(name, "spPcaFilename")) {
-        strcat(config->spPcaFilename, value);
+        strcpy(config->spPcaFilename, value);
         return CONFIG_LINE_SUCCESS;
     }
     if (!strcmp(name, "spLoggerFilename")) {
-        strcat(config->spLoggerFilename, value);
+        strcpy(config->spLoggerFilename, value);
         return CONFIG_LINE_SUCCESS;
     }
     if (!strcmp(name, "spKDTreeSplitMethod")) {
@@ -521,7 +521,7 @@ SP_LOGGER_LEVEL spConfigGetLoggerLevel(const SPConfig config) {
     return config->spLoggerLevel;
 }
 
-SP_CONFIG_MSG spConfigGetImageRelativePath(char *imagePath, const SPConfig config,
+SP_CONFIG_MSG spConfigGetImageFeaturesPath(char *imagePath, const SPConfig config,
                                            int index) {
     if (imagePath == NULL || config == NULL) {
         return SP_CONFIG_INVALID_ARGUMENT;

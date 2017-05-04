@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <opencv2/core/mat.hpp>
-//#include "SPImageProc.h"
+#include "SPImageProc.h"
 
 #include "main_aux.h"
 
@@ -94,7 +94,6 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
         spLoggerPrintError(ERR_MSG_READ_FILE, __FILE__, __func__, __LINE__);
         return NULL;
     }
-    printf("%d\n", numOfFeatures);
     features = (SPPoint **) malloc(numOfFeatures * sizeof(SPPoint *));
     if (features == NULL) {
         fclose(file);
@@ -109,6 +108,7 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
         return NULL;
     }
     for (int i = 0; i < numOfFeatures; ++i) {
+//        printf("Point %d -", i);
         for (int j = 0; j < dim; ++j) {
             if (!fread(&val, sizeof(double), 1, file)) {
                 fclose(file);
@@ -120,6 +120,8 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
                 spLoggerPrintError(ERR_MSG_READ_FILE, __FILE__, __func__, __LINE__);
                 return NULL;
             }
+            data[j] = val;
+//            printf(" %4.4lf ",val);
         }
         features[i] = spPointCreate(data, dim, index);
         if (!features[i]) {
@@ -131,8 +133,8 @@ SPPoint **readFeaturesFile(const char *filePath, int *nFeatures) {
             free(data);
             return NULL;
         }
+//        printf("\n");
     }
-    printf("----- %d -----\n", numOfFeatures);
     free(data);
     *nFeatures = numOfFeatures;
     fclose(file);
@@ -170,7 +172,8 @@ int extractFromImages(SPConfig config) {
             break;
         }
 
-        if (spConfigGetImageRelativePath(path, config, i) != SP_CONFIG_SUCCESS) {
+        if (spConfigGetImageFeaturesPath(path, config, i) != SP_CONFIG_SUCCESS) {
+            free(imageFeatures);
             spLoggerPrintError(IMAGE_PATH_ERROR, __FILE__, __func__, __LINE__);
             break;
         }
@@ -179,7 +182,6 @@ int extractFromImages(SPConfig config) {
             spLoggerPrintError(ERR_MSG_PATH_CREATION, __FILE__, __func__, __LINE__);
             break;
         }
-        printf("%s\n", path);
         if (!createFeaturesFile(path, imageFeatures, dim, i, nFeatures)) {
             free(imageFeatures);
             break;
@@ -220,7 +222,7 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
     }
 
     for (int i = 0; i < numOfImages; ++i) {
-        spConfigGetImagePath(path, config, i);
+        spConfigGetImageFeaturesPath(path, config, i);
         if (sprintf(path, "%s%s", path, FEATURE_FILE_TYPE) < 0) {
             spLoggerPrintError(ERR_MSG_PATH_CREATION, __FILE__, __func__, __LINE__);
             return NULL;
@@ -231,11 +233,9 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
             free(tmpFeatures);
             return NULL;
         }
-        printf("----- %d -----\n", nFeatures);
         *totalNumOfFeatures += nFeatures;
         numOfFeatures[i] = nFeatures;
         tmpFeatures[i] = tmpImageFeatures;
-        free(tmpImageFeatures);
     }
     features = (SPPoint **) malloc(*totalNumOfFeatures * sizeof(SPPoint *));
     if (!features) {
@@ -255,7 +255,7 @@ SPPoint **extractFromFile(SPConfig config, int *totalNumOfFeatures) {
 }
 
 KDTree *extractKDTree(SPConfig config) {
-    int n;
+    int n = 0;
     SP_CONFIG_MSG msg;
     SplitMethod splitMethod;
     SPPoint **features;
@@ -280,9 +280,7 @@ KDTree *extractKDTree(SPConfig config) {
     KDArray *kdArray = init(features, (size_t) n);
     if (!kdArray) return 0;
     KDTree *kdTree = createKDTree(kdArray, splitMethod);
-    destroyKDArray(kdArray);
     if (!kdTree) return 0;
-    printf("Finished KDTree \n");
     return kdTree;
 }
 
@@ -361,8 +359,8 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     char continueFlag;
     for (int j = 0; j < numOfSimilarImages; ++j) {
         int maxIndex = -1, max = -1;
-        continueFlag = 0;
         for (int i = 0; i < numOfImages; ++i) {
+            continueFlag = 0;
             // Check if index was already selected
             for (int l = 0; l < j; ++l)
                 if (indexArray[l] == i) {
@@ -372,7 +370,7 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
             // If it already was selected skip to next index
             if (continueFlag) continue;
             // If better rank image found update maxIndex
-            if (max > imageRank[i]) {
+            if (max < imageRank[i]) {
                 max = imageRank[i];
                 maxIndex = i;
             }

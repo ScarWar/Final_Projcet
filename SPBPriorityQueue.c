@@ -9,7 +9,7 @@ struct sp_bp_queue_t {
 };
 
 SPBPQueue *spBPQueueCreate(int maxSize) {
-    if (maxSize <= 1) {
+    if (maxSize <= 0) {
         spLoggerPrintError(ERR_MSG_INVALID_ARG, __FILE__, __func__, __LINE__);
         return NULL;
     }
