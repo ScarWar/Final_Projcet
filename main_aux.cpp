@@ -317,12 +317,11 @@ int searchSimilarImages(SPConfig config, char *queryPath, KDTree *kdTree) {
     }
 
 
-    for (int i = 0; i < numOfImages; ++i)
-        imageRank[i] = 0;
+    for (int i = 0; i < numOfImages; ++i) imageRank[i] = 0;
     for (int i = 0; i < numOfFeatures; ++i) {
         knnQueue = kNearestNeighbors(kdTree, queryFeatures[i], spKNN);
         if (!knnQueue) {
-            for (int j = 0; j < numOfFeatures; ++i)
+            for (int j = 0; j < numOfFeatures; ++j)
                 spPointDestroy(queryFeatures[i]);
             free(imageRank);
             return 0;

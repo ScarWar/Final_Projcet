@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
             printf("Invalid command line : use -c %s", argv[2]);
         config = spConfigCreate(argv[2], &msg);
         if (msg != SP_CONFIG_SUCCESS) {
-            printf("The configuration file %s couldnt be open\n", argv[2]);
+            printf("The configuration file %s couldn't be opened\n", argv[2]);
             return 1;
         }
     } else if (argc == 1) {
