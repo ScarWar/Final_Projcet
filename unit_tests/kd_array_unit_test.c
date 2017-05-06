@@ -36,13 +36,13 @@ static bool basicKDArrayTest() {
 
         double maxLeft = INT32_MIN;
 
-        for (int j = 0; j < getSize(left); j++) {
+        for (int j = 0; j < (int) getSize(left); j++) {
             SPPoint **leftArr = getArr(left);
             double val = spPointGetAxisCoor(leftArr[j], i);
             if (val > maxLeft) maxLeft = val;
         }
 
-        for (int j = 0; j < getSize(right); j++) {
+        for (int j = 0; j < (int) getSize(right); j++) {
             SPPoint **rightArr = getArr(right);
             ASSERT_TRUE(spPointGetAxisCoor(rightArr[j], i) > maxLeft);
         }
